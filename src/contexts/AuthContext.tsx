@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect } from 'react';
+import { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { getProfile } from '../services/auth';
 
 interface User {
@@ -6,6 +6,9 @@ interface User {
   name: string;
   username: string;
   email: string;
+  telegramId: string | null;
+  telegramActive: boolean;
+  telegramLinkingToken: string | null;
   // Add other user properties as needed
 }
 
@@ -16,6 +19,7 @@ interface AuthContextType {
   loading: boolean; // Add loading state
   login: (token: string) => void;
   logout: () => void;
+  refreshUserProfile: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -25,25 +29,22 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [token, setToken] = useState<string | null>(localStorage.getItem('token'));
   const [loading, setLoading] = useState(true); // Initialize loading to true
 
-  useEffect(() => {
-    const loadUser = async () => {
-      if (token) {
-        try {
-          const response = await getProfile(token);
-          setUser(response.data.user);
-        } catch (error) {
-          // Handle error, e.g., token expired
-          logout();
-        } finally {
-          setLoading(false);
-        }
-      } else {
-        setLoading(false);
+  const refreshUserProfile = useCallback(async () => {
+    if (token) {
+      try {
+        const response = await getProfile(token);
+        setUser(response.data.user);
+      } catch (error) {
+        console.error('Failed to refresh user profile', error);
+        logout(); // Log out if token is invalid
       }
-    };
-
-    loadUser();
+    }
   }, [token]);
+
+  useEffect(() => {
+    setLoading(true);
+    refreshUserProfile().finally(() => setLoading(false));
+  }, [refreshUserProfile]);
 
   const login = (newToken: string) => {
     localStorage.setItem('token', newToken);
@@ -57,7 +58,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, token, isAuthenticated: !!token, loading, login, logout }}>
+    <AuthContext.Provider value={{ user, token, isAuthenticated: !!token, loading, login, logout, refreshUserProfile }}>
       {children}
     </AuthContext.Provider>
   );

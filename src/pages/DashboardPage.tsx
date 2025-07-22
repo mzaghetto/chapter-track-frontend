@@ -1,62 +1,79 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { getUserManhwas, removeManhwaFromUser } from '../services/manhwa';
-import { AppBar, Toolbar, Typography, Button, Container, Box, List, ListItem, ListItemText, IconButton, CircularProgress } from '@mui/material';
+import { AppBar, Toolbar, Typography, Button, Container, Box, IconButton, CircularProgress, Switch, Card, CardMedia, CardContent, CardActions, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
 import ManhwaSearch from '../components/ManhwaSearch';
-import UpdateManhwaModal from '../components/UpdateManhwaModal';
 import { useNavigate } from 'react-router-dom';
+import ProviderFilter from '../components/ProviderFilter';
+import { registerManhwaNotification } from '../services/notification';
+import UpdateManhwaModal from '../components/UpdateManhwaModal';
 
-interface Manhwa {
-  manhwa_id: string;
-  manhwa_position: number;
-  last_episode_read: number;
-  read_url: string[];
-  notify_telegram: boolean;
-  notification_website: boolean;
+interface DetailedUserManhwa {
+  id: number;
+  manhwaId: number;
+  manhwaName: string;
+  coverImage: string | null;
+  providerId: number | null;
+  providerName: string | null;
+  lastEpisodeReleased: number | null;
+  manhwaUrlProvider: string | null;
+  statusReading: 'READING' | 'TO_READ' | 'COMPLETED' | 'ON_HOLD' | 'DROPPED';
+  statusManhwa: 'ONGOING' | 'COMPLETED' | 'HIATUS' | null;
+  lastEpisodeRead: number | null;
+  lastNotifiedEpisode: number | null;
+  isTelegramNotificationEnabled?: boolean; // Added this field
+  order: number;
+  lastUpdated: Date | null;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 const DashboardPage = () => {
   const { user, token, logout } = useAuth();
-  const [manhwas, setManhwas] = useState<Manhwa[]>([]);
-  const [selectedManhwa, setSelectedManhwa] = useState<Manhwa | null>(null);
+  const [manhwas, setManhwas] = useState<DetailedUserManhwa[]>([]);
+  const [filteredManhwas, setFilteredManhwas] = useState<DetailedUserManhwa[]>([]);
+  const [selectedManhwa, setSelectedManhwa] = useState<DetailedUserManhwa | null>(null);
   const [isModalOpen, setModalOpen] = useState(false);
-  const [loadingManhwas, setLoadingManhwas] = useState(true); // New loading state
+  const [loadingManhwas, setLoadingManhwas] = useState(true);
+  const [openConfirmDialog, setOpenConfirmDialog] = useState(false);
+  const [manhwaToRemove, setManhwaToRemove] = useState<number | null>(null);
   const navigate = useNavigate();
 
-  const fetchManhwas = () => {
-    setLoadingManhwas(true); // Set loading to true when fetching starts
+  const fetchManhwas = useCallback(() => {
+    setLoadingManhwas(true);
     if (token) {
       getUserManhwas(token)
         .then((response) => {
-          setManhwas(response.data.userManhwa.manhwas);
+          setManhwas(response.data.userManhwas);
+          setFilteredManhwas(response.data.userManhwas);
         })
         .catch((error) => {
           console.error('Failed to fetch manhwas', error);
         })
         .finally(() => {
-          setLoadingManhwas(false); // Set loading to false when fetching ends
+          setLoadingManhwas(false);
         });
     }
-  };
+  }, [token]);
 
   useEffect(() => {
     fetchManhwas();
-  }, [token]);
+  }, [fetchManhwas]);
 
-  const handleRemoveManhwa = async (manhwaId: string) => {
+  const handleRemoveManhwa = async (manhwaId: number) => {
     if (token) {
       try {
-        await removeManhwaFromUser(token, [manhwaId]);
-        fetchManhwas(); // Refresh the list after removing a manhwa
+        await removeManhwaFromUser(token, [manhwaId.toString()]);
+        fetchManhwas();
       } catch (error) {
         console.error('Failed to remove manhwa', error);
       }
     }
   };
 
-  const handleOpenModal = (manhwa: Manhwa) => {
+  const handleOpenModal = (manhwa: DetailedUserManhwa) => {
     setSelectedManhwa(manhwa);
     setModalOpen(true);
   };
@@ -68,6 +85,50 @@ const DashboardPage = () => {
 
   const handleProfileClick = () => {
     navigate('/profile');
+  };
+
+  const handleProviderChange = (providerId: number | '') => {
+    if (providerId === '') {
+      setFilteredManhwas(manhwas);
+    } else {
+      const filtered = manhwas.filter(manhwa => manhwa.providerId === providerId);
+      setFilteredManhwas(filtered);
+    }
+  };
+
+  const handleNotificationChange = async (manhwaId: number, isEnabled: boolean) => {
+    if (token) {
+      try {
+        const response = await registerManhwaNotification(token, manhwaId, 'TELEGRAM', isEnabled);
+        const updatedManhwa = response.data.userNotification;
+
+        const updatedManhwas = manhwas.map(m =>
+          m.manhwaId === updatedManhwa.manhwaId ? { ...m, isTelegramNotificationEnabled: updatedManhwa.isEnabled } : m
+        );
+        setManhwas(updatedManhwas);
+        setFilteredManhwas(updatedManhwas);
+
+      } catch (error) {
+        console.error('Failed to update notification status', error);
+      }
+    }
+  };
+
+  const handleOpenConfirmDialog = (manhwaId: number) => {
+    setManhwaToRemove(manhwaId);
+    setOpenConfirmDialog(true);
+  };
+
+  const handleCloseConfirmDialog = () => {
+    setManhwaToRemove(null);
+    setOpenConfirmDialog(false);
+  };
+
+  const handleConfirmRemove = () => {
+    if (manhwaToRemove) {
+      handleRemoveManhwa(manhwaToRemove);
+    }
+    handleCloseConfirmDialog();
   };
 
   return (
@@ -82,8 +143,12 @@ const DashboardPage = () => {
           <Button color="inherit" onClick={logout}>Logout</Button>
         </Toolbar>
       </AppBar>
+      
       <Container sx={{ mt: 4 }}>
         <ManhwaSearch onManhwaAdded={fetchManhwas} />
+        <Box sx={{ mt: 2 }}>
+          <ProviderFilter onProviderChange={handleProviderChange} />
+        </Box>
         <Typography variant="h4" component="h1" gutterBottom sx={{ mt: 4 }}>
           Your Manhwas
         </Typography>
@@ -92,30 +157,83 @@ const DashboardPage = () => {
             <CircularProgress />
           </Box>
         ) : (
-          <List>
-            {manhwas.map((manhwa) => (
-              <ListItem 
-                key={manhwa.manhwa_id}
-                secondaryAction={
-                  <>
-                    <IconButton edge="end" aria-label="edit" onClick={() => handleOpenModal(manhwa)}>
-                      <EditIcon />
-                    </IconButton>
-                    <IconButton edge="end" aria-label="delete" onClick={() => handleRemoveManhwa(manhwa.manhwa_id)}>
-                      <DeleteIcon />
-                    </IconButton>
-                  </>
-                }
-              >
-                <ListItemText 
-                  primary={`Position: ${manhwa.manhwa_position}`}
-                  secondary={`Last Episode Read: ${manhwa.last_episode_read}`}
+          <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))', gap: 3 }}>
+            {filteredManhwas.map((manhwa) => (
+              <Card key={manhwa.id} sx={{ display: 'flex', flexDirection: 'column' }}>
+                <CardMedia
+                  component="img"
+                  height="250"
+                  image={manhwa.coverImage || 'https://via.placeholder.com/250/cccccc/ffffff?text=No+Image'} // Placeholder if no image
+                  alt={manhwa.manhwaName}
+                  sx={{ objectFit: 'cover' }}
                 />
-              </ListItem>
+                <CardContent sx={{ flexGrow: 1, pb: 0 }}>
+                  <Typography gutterBottom variant="h6" component="div" sx={{ fontSize: '1.1rem', lineHeight: 1.3 }}>
+                    {manhwa.manhwaName}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary" sx={{ mb: 0.5 }}>
+                    Provider: {manhwa.providerName}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    Last Episode Read: {manhwa.lastEpisodeRead}
+                  </Typography>
+                  {manhwa.lastEpisodeReleased && typeof manhwa.lastEpisodeRead === 'number' && manhwa.lastEpisodeReleased > manhwa.lastEpisodeRead && (
+                    <Typography variant="body2" color="primary" sx={{ mt: 1, fontWeight: 'bold' }}>
+                      New Episode Available! ({manhwa.lastEpisodeReleased})
+                    </Typography>
+                  )}
+                </CardContent>
+                <CardActions sx={{ justifyContent: 'space-between', p: 2, pt: 1 }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                    <Switch
+                      edge="start"
+                      onChange={(e) => handleNotificationChange(manhwa.manhwaId, e.target.checked)}
+                      checked={manhwa.isTelegramNotificationEnabled || false}
+                      inputProps={{ 'aria-label': 'toggle telegram notifications' }}
+                    />
+                    <Typography variant="caption" color="text.secondary">
+                      Notifications
+                    </Typography>
+                  </Box>
+                  <Box>
+                    <IconButton aria-label="edit" onClick={() => handleOpenModal(manhwa)} size="small">
+                      <EditIcon fontSize="small" />
+                    </IconButton>
+                    <IconButton aria-label="delete" onClick={() => handleOpenConfirmDialog(manhwa.manhwaId)} size="small">
+                      <DeleteIcon fontSize="small" />
+                    </IconButton>
+                  </Box>
+                </CardActions>
+              </Card>
             ))}
-          </List>
+          </Box>
         )}
       </Container>
+      <UpdateManhwaModal
+        open={isModalOpen}
+        handleClose={handleCloseModal}
+        manhwa={selectedManhwa}
+        onManhwaUpdated={fetchManhwas}
+      />
+      <Dialog
+        open={openConfirmDialog}
+        onClose={handleCloseConfirmDialog}
+        aria-labelledby="alert-dialog-title"
+        aria-describedby="alert-dialog-description"
+      >
+        <DialogTitle id="alert-dialog-title">{"Confirm Deletion"}</DialogTitle>
+        <DialogContent>
+          <DialogContentText id="alert-dialog-description">
+            Are you sure you want to remove this manhwa from your list?
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseConfirmDialog}>Cancel</Button>
+          <Button onClick={handleConfirmRemove} autoFocus>
+            Confirm
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 };

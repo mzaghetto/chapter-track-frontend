@@ -28,15 +28,47 @@
 - Adjusted Snackbar position to top-center for better visibility.
 - Implemented global 401 Unauthorized error handling to redirect to login page.
 - Fixed `useNavigate` hook usage by creating a `NavigationSetter` component.
+- Implemented the UI for the `LoginPage` and `RegisterPage` with a modern design using Material-UI.
+- Beautified the dashboard home to improve UI/UX for showing the manhwas list.
+- Implemented the functionality to display a list of manhwas on the dashboard.
+- Implemented the functionality for users to add, remove, and update their manhwas.
+- Implemented the user profile page.
+- Added a proper styling solution (e.g., Material-UI or Bootstrap).
+- **Fixed Bug:** Manhwa list does not update automatically after adding a new manhwa.
+- Added confirmation dialog for removing manhwa.
+- Improved Telegram notification toggle to update UI optimistically and then with backend response.
+- Fixed Telegram notification toggle state on refresh by including `isTelegramNotificationEnabled` in backend response.
+- Fixed 500 error on Telegram linking reset by setting `Content-Type` header to `application/json`.
+- Improved Telegram linking instructions on frontend.
+- Implemented frontend update of Telegram linking status and conditional button display.
+- Fixed `useCallback` import in `AuthContext.tsx`.
+- Fixed backend `profile` controller to return `telegramId` and `telegramActive`.
+- Improved frontend error message for enabling Telegram notifications without linking.
+- Adjusted Snackbar position to top-center in `ProfilePage.tsx`.
+- Implemented backend route for updating user manhwa (last episode read, provider, status).
+- Implemented new UI/UX for adding a new manhwa with a dedicated modal for provider and initial details selection.
+- Fixed `@prisma/client` import in `AddManhwaModal.tsx`.
+- Enhanced `AddManhwaModal` UI to show manhwa cover and last episode released for each provider.
+- Enhanced `ManhwaSearch` UI to show manhwa cover and improve layout in search results.
+- Improved UI/UX for adding existing manhwa by displaying a Snackbar message.
+- Disabled CORS in the backend to allow access from mobile devices.
+- Added a workaround for `window.ethereum` error on mobile by defining it in `public/index.html`.
+- Implemented Google SSO login in the frontend.
+- Configured Google Client ID to be read from environment variables.
+- Fixed incorrect `providerId` being sent when adding a new manhwa.
+- Fixed display of "New Episode Available!" when `lastEpisodeRead` is 0.
+- Fixed payload names for updating user manhwa in `UpdateManhwaModal.tsx`.
+- Fixed `providerId` selection and update in `UpdateManhwaModal.tsx`.
+- Added "Clear Search" button to `ManhwaSearch.tsx`.
+- Configured `refreshToken` cookie domain to `null` in backend for cross-device access.
+- Configured `API_URL` to be read from environment variables in frontend services.
+- Fixed TypeScript errors in backend (`fastifyJwt` cookie config and missing imports).
 
 ## Next Steps
 
-- [x] Implement the UI for the `LoginPage` and `RegisterPage` with a modern design using Material-UI.
 - [ ] Implement the Google SSO login flow.
-- [x] Implement the functionality to display a list of manhwas on the dashboard.
-- [x] Implement the functionality for users to add, remove, and update their manhwas.
-- [x] Implement the user profile page.
-- [x] Add a proper styling solution (e.g., Material-UI or Bootstrap).
-- [x] **Fix Bug:** Manhwa list does not update automatically after adding a new manhwa.
+- [ ] Explore pagination for user's manhwa list on the dashboard.
+- [ ] Add more detailed error handling and user feedback across the application.
+- [ ] Implement admin functionalities (e.g., creating/updating manhwas from the frontend).
 
 ALWAYS UPDATE THIS FILE FOR YOUR CONTEXT IN NEXT SESSIONS

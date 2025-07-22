@@ -1,24 +1,76 @@
-import React, { useState } from 'react';
-import { Button, TextField, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from '@mui/material';
-import { updateUserManhwa } from '../services/manhwa';
+import React, { useState, useEffect } from 'react';
+import { Button, TextField, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Select, MenuItem, FormControl, InputLabel } from '@mui/material';
+import { updateUserManhwa, getManhwaProviders } from '../services/manhwa';
 import { useAuth } from '../contexts/AuthContext';
+
+interface DetailedUserManhwa {
+    id: number;
+    manhwaId: number;
+    manhwaName: string;
+    coverImage: string | null;
+    providerId: number | null;
+    providerName: string | null;
+    lastEpisodeReleased: number | null;
+    manhwaUrlProvider: string | null;
+    statusReading: 'READING' | 'TO_READ' | 'COMPLETED' | 'ON_HOLD' | 'DROPPED';
+    statusManhwa: 'ONGOING' | 'COMPLETED' | 'HIATUS' | null;
+    lastEpisodeRead: number | null;
+    lastNotifiedEpisode: number | null;
+    order: number;
+    lastUpdated: Date | null;
+    createdAt: Date;
+    updatedAt: Date;
+  }
+
+  interface ManhwaProvider {
+    id: number;
+    providerName: string;
+    providerId: number;
+  }
 
 interface UpdateManhwaModalProps {
   open: boolean;
   handleClose: () => void;
-  manhwaId: string;
-  currentEpisode: number;
+  manhwa: DetailedUserManhwa | null;
   onManhwaUpdated: () => void;
 }
 
-const UpdateManhwaModal: React.FC<UpdateManhwaModalProps> = ({ open, handleClose, manhwaId, currentEpisode, onManhwaUpdated }) => {
+const UpdateManhwaModal: React.FC<UpdateManhwaModalProps> = ({ open, handleClose, manhwa, onManhwaUpdated }) => {
   const { token } = useAuth();
-  const [newEpisode, setNewEpisode] = useState(currentEpisode);
+  const [lastEpisodeRead, setLastEpisodeRead] = useState(manhwa?.lastEpisodeRead || 0);
+  const [selectedProvider, setSelectedProvider] = useState<number | null>(manhwa?.providerId || null);
+  const [providers, setProviders] = useState<ManhwaProvider[]>([]);
+
+  useEffect(() => {
+    setLastEpisodeRead(manhwa?.lastEpisodeRead || 0);
+    if (token && manhwa) {
+        getManhwaProviders(token, manhwa.manhwaId)
+            .then(response => {
+                setProviders(response.data.manhwaProviders);
+
+                // Find the ManhwaProvider that matches the manhwa's providerId
+                const matchingManhwaProvider = response.data.manhwaProviders.find(
+                    (mp: any) => mp.providerId === manhwa.providerId
+                );
+                if (matchingManhwaProvider) {
+                    setSelectedProvider(matchingManhwaProvider.providerId);
+                } else {
+                    setSelectedProvider(null);
+                }
+            })
+            .catch(error => {
+                console.error('Failed to fetch manhwa providers', error);
+            });
+    }
+  }, [manhwa, token]);
 
   const handleUpdate = async () => {
-    if (token) {
+    if (token && manhwa) {
       try {
-        await updateUserManhwa(token, manhwaId, { last_episode_read: newEpisode });
+        await updateUserManhwa(token, manhwa.id.toString(), { 
+            lastEpisodeRead: lastEpisodeRead,
+            providerId: selectedProvider
+        });
         onManhwaUpdated();
         handleClose();
       } catch (error) {
@@ -42,9 +94,24 @@ const UpdateManhwaModal: React.FC<UpdateManhwaModalProps> = ({ open, handleClose
           type="number"
           fullWidth
           variant="standard"
-          value={newEpisode}
-          onChange={(e) => setNewEpisode(parseInt(e.target.value))}
+          value={lastEpisodeRead}
+          onChange={(e) => setLastEpisodeRead(parseInt(e.target.value))}
         />
+        <FormControl fullWidth margin="dense">
+          <InputLabel id="provider-select-label">Provider</InputLabel>
+          <Select
+            labelId="provider-select-label"
+            id="provider-select"
+            value={selectedProvider || ''}
+            onChange={(e) => setSelectedProvider(e.target.value as number)}
+          >
+            {providers.map((provider) => (
+              <MenuItem key={provider.id} value={provider.providerId}>
+                {provider.providerName}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
       </DialogContent>
       <DialogActions>
         <Button onClick={handleClose}>Cancel</Button>

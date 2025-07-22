@@ -1,16 +1,18 @@
 import React, { useState } from 'react';
-import { Button, TextField, List, ListItem, ListItemText, IconButton, Typography, Box } from '@mui/material';
+import { Button, TextField, List, ListItem, ListItemText, IconButton, Typography, Box, Snackbar, Alert } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
-import { filterManhwa, addManhwaToUser } from '../services/manhwa';
+import { filterManhwa } from '../services/manhwa';
 import { useAuth } from '../contexts/AuthContext';
+import AddManhwaModal from './AddManhwaModal';
 
 interface ManhwaSearchProps {
   onManhwaAdded: () => void;
 }
 
 interface ManhwaSearchResult {
-  manhwaId: string;
+  manhwaId: number;
   manhwaName: string;
+  coverImage: string | null;
 }
 
 const ManhwaSearch: React.FC<ManhwaSearchProps> = ({ onManhwaAdded }) => {
@@ -18,6 +20,9 @@ const ManhwaSearch: React.FC<ManhwaSearchProps> = ({ onManhwaAdded }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [searchResults, setSearchResults] = useState<ManhwaSearchResult[]>([]);
   const [searched, setSearched] = useState(false); // New state to track if a search has been performed
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedManhwa, setSelectedManhwa] = useState<{ id: number; name: string; coverImage: string | null } | null>(null);
+  const [snackbar, setSnackbar] = useState<{ open: boolean, message: string, severity: 'success' | 'error' }>({ open: false, message: '', severity: 'success' });
 
   const handleSearch = async () => {
     if (token) {
@@ -33,22 +38,30 @@ const ManhwaSearch: React.FC<ManhwaSearchProps> = ({ onManhwaAdded }) => {
     }
   };
 
-  const handleAddManhwa = async (manhwaId: string) => {
-    if (token) {
-      try {
-        await addManhwaToUser(token, { 
-          manhwa_id: manhwaId,
-          manhwa_position: 0, // This will be handled by the backend
-          last_episode_read: 0,
-          read_url: [],
-          notify_telegram: false,
-          notification_website: false,
-        });
-        onManhwaAdded();
-      } catch (error) {
-        console.error('Failed to add manhwa', error);
-      }
-    }
+  const handleOpenModal = (manhwaId: number, manhwaName: string, coverImage: string | null) => {
+    setSelectedManhwa({ id: manhwaId, name: manhwaName, coverImage });
+    setIsModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setSelectedManhwa(null);
+  };
+
+  const handleManhwaAdded = () => {
+    onManhwaAdded();
+    handleCloseModal();
+    setSnackbar({ open: true, message: 'Manhwa added successfully!', severity: 'success' });
+  };
+
+  const handleCloseSnackbar = () => {
+    setSnackbar({ ...snackbar, open: false });
+  };
+
+  const handleClearSearch = () => {
+    setSearchTerm('');
+    setSearchResults([]);
+    setSearched(false);
   };
 
   return (
@@ -63,6 +76,9 @@ const ManhwaSearch: React.FC<ManhwaSearchProps> = ({ onManhwaAdded }) => {
       <Button variant="contained" onClick={handleSearch} fullWidth>
         Search
       </Button>
+      <Button variant="outlined" onClick={handleClearSearch} fullWidth sx={{ mt: 1 }}>
+        Clear Search
+      </Button>
       
       {searched && searchResults.length === 0 && (
         <Typography variant="body1" color="textSecondary" sx={{ mt: 2 }}>
@@ -76,16 +92,41 @@ const ManhwaSearch: React.FC<ManhwaSearchProps> = ({ onManhwaAdded }) => {
             <ListItem 
               key={manhwa.manhwaId}
               secondaryAction={
-                <IconButton edge="end" aria-label="add" onClick={() => handleAddManhwa(manhwa.manhwaId)}>
+                <IconButton edge="end" aria-label="add" onClick={() => handleOpenModal(manhwa.manhwaId, manhwa.manhwaName, manhwa.coverImage)}>
                   <AddIcon />
                 </IconButton>
               }
+              sx={{ display: 'flex', alignItems: 'center', mb: 1, border: '1px solid #e0e0e0', borderRadius: '4px', p: 1 }}
             >
+              <Box sx={{ mr: 2 }}>
+                <img src={manhwa.coverImage || 'https://via.placeholder.com/50/cccccc/ffffff?text=No+Image'} alt={manhwa.manhwaName} style={{ width: 50, height: 70, objectFit: 'cover', borderRadius: 4 }} />
+              </Box>
               <ListItemText primary={manhwa.manhwaName} />
             </ListItem>
           ))}
         </List>
       )}
+      {selectedManhwa && (
+        <AddManhwaModal
+          open={isModalOpen}
+          handleClose={handleCloseModal}
+          manhwaId={selectedManhwa.id}
+          manhwaName={selectedManhwa.name}
+          coverImage={selectedManhwa.coverImage}
+          onManhwaAdded={handleManhwaAdded}
+          setSnackbar={setSnackbar}
+        />
+      )}
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={6000}
+        onClose={handleCloseSnackbar}
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+      >
+        <Alert onClose={handleCloseSnackbar} severity={snackbar.severity} sx={{ width: '100%' }}>
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 };

@@ -1,18 +1,19 @@
 import axios from 'axios';
 
-const API_URL = 'http://localhost:5001'; // Assuming the backend is running on port 5001
+const API_URL = process.env.REACT_APP_API_URL; // Assuming the backend is running on port 5001
 
 const api = axios.create({
   baseURL: API_URL,
 });
 
-export const getUserManhwas = (token: string, page?: number) => {
+export const getUserManhwas = (token: string, page?: number, pageSize?: number) => {
   return api.get('/user/manhwas', {
     headers: {
       Authorization: `Bearer ${token}`,
     },
     params: {
-        page
+        page,
+        pageSize
     }
   });
 };
@@ -25,12 +26,12 @@ export const addManhwaToUser = (token: string, data: any) => {
     });
 };
 
-export const removeManhwaFromUser = (token: string, manhwa_id: string[]) => {
+export const removeManhwaFromUser = (token: string, manhwaId: string[]) => {
     return api.delete('/user/remove-manhwa', {
         headers: {
         Authorization: `Bearer ${token}`,
         },
-        data: { manhwa_id },
+        data: { manhwaId },
     });
 };
 
@@ -49,6 +50,25 @@ export const updateUserManhwa = (token: string, manhwaId: string, data: any) => 
     return api.patch(`/user/manhwas/${manhwaId}`, data, {
         headers: {
         Authorization: `Bearer ${token}`,
+        },
+    });
+};
+
+export const getProviders = (token: string) => {
+    return api.get('/providers', {
+        headers: {
+        Authorization: `Bearer ${token}`,
+        },
+    });
+};
+
+export const getManhwaProviders = (token: string, manhwaId: number) => {
+    return api.get('/manhwa-providers', {
+        headers: {
+            Authorization: `Bearer ${token}`,
+        },
+        params: {
+            manhwaId,
         },
     });
 };
