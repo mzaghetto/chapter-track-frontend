@@ -28,7 +28,7 @@
 - Adjusted Snackbar position to top-center for better visibility.
 - Implemented global 401 Unauthorized error handling to redirect to login page.
 - Fixed `useNavigate` hook usage by creating a `NavigationSetter` component.
-- Implemented the UI for the `LoginPage` and `RegisterPage` with a modern design using Material-UI.
+- Implemented the UI for the `LoginPage`, `RegisterPage`, and `DashboardPage` with a modern design using Material-UI.
 - Beautified the dashboard home to improve UI/UX for showing the manhwas list.
 - Implemented the functionality to display a list of manhwas on the dashboard.
 - Implemented the functionality for users to add, remove, and update their manhwas.
@@ -65,6 +65,9 @@
 - Fixed TypeScript errors in backend (`fastifyJwt` cookie config and missing imports).
 - Implemented pagination for user's manhwa list on the dashboard.
 - Configured `pageSize` to be read from environment variables in `DashboardPage.tsx`.
+- Implemented pagination for manhwa search results.
+- Configured search results `pageSize` to be read from environment variables in `ManhwaSearch.tsx`.
+- Fixed TypeScript error in `filter-manhwa.ts` by correcting destructuring and response.
 
 ## Next Steps
 

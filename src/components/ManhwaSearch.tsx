@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Button, TextField, List, ListItem, ListItemText, IconButton, Typography, Box, Snackbar, Alert } from '@mui/material';
+import { Button, TextField, List, ListItem, ListItemText, IconButton, Typography, Box, Snackbar, Alert, Pagination } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import { filterManhwa } from '../services/manhwa';
 import { useAuth } from '../contexts/AuthContext';
@@ -13,6 +13,7 @@ interface ManhwaSearchResult {
   manhwaId: number;
   manhwaName: string;
   coverImage: string | null;
+  lastEpisodeReleased?: number;
 }
 
 const ManhwaSearch: React.FC<ManhwaSearchProps> = ({ onManhwaAdded }) => {
@@ -23,16 +24,21 @@ const ManhwaSearch: React.FC<ManhwaSearchProps> = ({ onManhwaAdded }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedManhwa, setSelectedManhwa] = useState<{ id: number; name: string; coverImage: string | null } | null>(null);
   const [snackbar, setSnackbar] = useState<{ open: boolean, message: string, severity: 'success' | 'error' }>({ open: false, message: '', severity: 'success' });
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(parseInt(process.env.REACT_APP_SEARCH_PAGE_SIZE || '3'));
+  const [totalItems, setTotalItems] = useState(0);
 
   const handleSearch = async () => {
     if (token) {
       try {
-        const response = await filterManhwa(token, searchTerm);
+        const response = await filterManhwa(token, searchTerm, page, pageSize);
         setSearchResults(response.data.items);
+        setTotalItems(response.data.totalItems);
         setSearched(true); // Set to true after a search
       } catch (error) {
         console.error('Failed to search for manhwas', error);
         setSearchResults([]); // Clear results on error
+        setTotalItems(0);
         setSearched(true); // Still set to true to show no results message
       }
     }
@@ -105,6 +111,16 @@ const ManhwaSearch: React.FC<ManhwaSearchProps> = ({ onManhwaAdded }) => {
             </ListItem>
           ))}
         </List>
+      )}
+      {totalItems > 0 && (
+        <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
+          <Pagination
+            count={Math.ceil(totalItems / pageSize)} // Assuming 10 items per page for search results
+            page={page}
+            onChange={(event, value) => setPage(value)}
+            color="primary"
+          />
+        </Box>
       )}
       {selectedManhwa && (
         <AddManhwaModal

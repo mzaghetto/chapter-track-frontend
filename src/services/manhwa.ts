@@ -35,13 +35,15 @@ export const removeManhwaFromUser = (token: string, manhwaId: string[]) => {
     });
 };
 
-export const filterManhwa = (token: string, manhwaName: string) => {
+export const filterManhwa = (token: string, manhwaName: string, page: number = 1, limit: number = 8) => {
     return api.get('/manhwa/list', {
         headers: {
         Authorization: `Bearer ${token}`,
         },
         params: {
             manhwaName,
+            page,
+            limit,
         },
     });
 };
