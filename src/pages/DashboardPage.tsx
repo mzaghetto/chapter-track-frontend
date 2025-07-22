@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { getUserManhwas, removeManhwaFromUser } from '../services/manhwa';
-import { AppBar, Toolbar, Typography, Button, Container, Box, IconButton, CircularProgress, Switch, Card, CardMedia, CardContent, CardActions, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from '@mui/material';
+import { AppBar, Toolbar, Typography, Button, Container, Box, IconButton, CircularProgress, Switch, Card, CardMedia, CardContent, CardActions, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Pagination } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
 import ManhwaSearch from '../components/ManhwaSearch';
@@ -39,15 +39,19 @@ const DashboardPage = () => {
   const [loadingManhwas, setLoadingManhwas] = useState(true);
   const [openConfirmDialog, setOpenConfirmDialog] = useState(false);
   const [manhwaToRemove, setManhwaToRemove] = useState<number | null>(null);
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(parseInt(process.env.REACT_APP_MANHWAS_PER_PAGE || '8'));
+  const [totalManhwas, setTotalManhwas] = useState(0);
   const navigate = useNavigate();
 
   const fetchManhwas = useCallback(() => {
     setLoadingManhwas(true);
     if (token) {
-      getUserManhwas(token)
+      getUserManhwas(token, page, pageSize)
         .then((response) => {
           setManhwas(response.data.userManhwas);
           setFilteredManhwas(response.data.userManhwas);
+          setTotalManhwas(response.data.total);
         })
         .catch((error) => {
           console.error('Failed to fetch manhwas', error);
@@ -56,7 +60,7 @@ const DashboardPage = () => {
           setLoadingManhwas(false);
         });
     }
-  }, [token]);
+  }, [token, page, pageSize]);
 
   useEffect(() => {
     fetchManhwas();
@@ -206,6 +210,16 @@ const DashboardPage = () => {
                 </CardActions>
               </Card>
             ))}
+          </Box>
+        )}
+        {totalManhwas > 0 && (
+          <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4, mb: 4 }}>
+            <Pagination
+              count={Math.ceil(totalManhwas / pageSize)}
+              page={page}
+              onChange={(event, value) => setPage(value)}
+              color="primary"
+            />
           </Box>
         )}
       </Container>

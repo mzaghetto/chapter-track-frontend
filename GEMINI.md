@@ -63,11 +63,12 @@
 - Configured `refreshToken` cookie domain to `null` in backend for cross-device access.
 - Configured `API_URL` to be read from environment variables in frontend services.
 - Fixed TypeScript errors in backend (`fastifyJwt` cookie config and missing imports).
+- Implemented pagination for user's manhwa list on the dashboard.
+- Configured `pageSize` to be read from environment variables in `DashboardPage.tsx`.
 
 ## Next Steps
 
 - [ ] Implement the Google SSO login flow.
-- [ ] Explore pagination for user's manhwa list on the dashboard.
 - [ ] Add more detailed error handling and user feedback across the application.
 - [ ] Implement admin functionalities (e.g., creating/updating manhwas from the frontend).
 
