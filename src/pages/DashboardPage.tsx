@@ -9,6 +9,7 @@ import { useNavigate } from 'react-router-dom';
 import ProviderFilter from '../components/ProviderFilter';
 import { registerManhwaNotification } from '../services/notification';
 import UpdateManhwaModal from '../components/UpdateManhwaModal';
+import ManhwaCardSkeleton from '../components/ManhwaCardSkeleton';
 
 interface DetailedUserManhwa {
   id: number;
@@ -160,8 +161,10 @@ const DashboardPage = () => {
           Your Manhwas
         </Typography>
         {loadingManhwas ? (
-          <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
-            <CircularProgress />
+          <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))', gap: 3 }}>
+            {Array.from(new Array(pageSize)).map((_, index) => (
+              <ManhwaCardSkeleton key={index} />
+            ))}
           </Box>
         ) : (
           <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))', gap: 3 }}>
