@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Button, TextField, List, ListItem, ListItemText, IconButton, Typography, Box, Snackbar, Alert, Pagination } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import { filterManhwa } from '../services/manhwa';
@@ -32,7 +32,7 @@ const ManhwaSearch: React.FC<ManhwaSearchProps> = ({ onManhwaAdded }) => {
   const [pageSize, setPageSize] = useState(parseInt(process.env.REACT_APP_SEARCH_PAGE_SIZE || '3')); // eslint-disable-line @typescript-eslint/no-unused-vars
   const [totalItems, setTotalItems] = useState(0);
 
-  const handleSearch = async () => {
+  const handleSearch = useCallback(async () => {
     if (token) {
       try {
         const response = await filterManhwa(token, searchTerm, page, pageSize);
@@ -46,7 +46,13 @@ const ManhwaSearch: React.FC<ManhwaSearchProps> = ({ onManhwaAdded }) => {
         setSearched(true); // Still set to true to show no results message
       }
     }
-  };
+  }, [token, searchTerm, page, pageSize]);
+
+  useEffect(() => {
+    if (searched) {
+      handleSearch();
+    }
+  }, [page, handleSearch, searched]);
 
   const handleOpenModal = (manhwaId: number, manhwaName: string, coverImage: string | null) => {
     setSelectedManhwa({ id: manhwaId, name: manhwaName, coverImage });
