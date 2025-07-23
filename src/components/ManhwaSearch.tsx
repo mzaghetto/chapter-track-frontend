@@ -78,6 +78,8 @@ const ManhwaSearch: React.FC<ManhwaSearchProps> = ({ onManhwaAdded }) => {
     setSearchTerm('');
     setSearchResults([]);
     setSearched(false);
+    setTotalItems(0);
+    setPage(1);
   };
 
   return (
