@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Button, TextField, List, ListItem, ListItemText, IconButton, Typography, Box, Snackbar, Alert, Pagination } from '@mui/material';
-import AddIcon from '@mui/icons-material/Add';
+import { Button, TextField, List, Typography, Box, Snackbar, Alert, Pagination } from '@mui/material';
+import ManhwaSearchListItem from './ManhwaSearchListItem';
 import { filterManhwa } from '../services/manhwa';
 import { useAuth } from '../contexts/AuthContext';
 import AddManhwaModal from './AddManhwaModal';
@@ -29,8 +29,8 @@ const ManhwaSearch: React.FC<ManhwaSearchProps> = ({ onManhwaAdded }) => {
   const [selectedManhwa, setSelectedManhwa] = useState<{ id: number; name: string; coverImage: string | null } | null>(null);
   const [snackbar, setSnackbar] = useState<{ open: boolean, message: string, severity: 'success' | 'error' }>({ open: false, message: '', severity: 'success' });
   const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState(parseInt(process.env.REACT_APP_SEARCH_PAGE_SIZE || '3')); // eslint-disable-line @typescript-eslint/no-unused-vars
   const [totalItems, setTotalItems] = useState(0);
+  const [pageSize] = useState(parseInt(process.env.REACT_APP_SEARCH_PAGE_SIZE || '3'));
 
   const handleSearch = useCallback(async () => {
     if (token) {
@@ -107,48 +107,18 @@ const ManhwaSearch: React.FC<ManhwaSearchProps> = ({ onManhwaAdded }) => {
       {searchResults.length > 0 && (
         <List sx={{ mt: 2 }}>
           {searchResults.map((manhwa) => (
-            <ListItem 
+            <ManhwaSearchListItem
               key={manhwa.manhwaId}
-              secondaryAction={
-                <IconButton edge="end" aria-label="add" onClick={() => handleOpenModal(manhwa.manhwaId, manhwa.manhwaName, manhwa.coverImage)}>
-                  <AddIcon />
-                </IconButton>
-              }
-              sx={{ display: 'flex', alignItems: 'center', mb: 1, border: '1px solid #e0e0e0', borderRadius: '4px', p: 1 }}
-            >
-              <Box sx={{ mr: 2 }}>
-                <img src={manhwa.coverImage || 'https://via.placeholder.com/50/cccccc/ffffff?text=No+Image'} alt={manhwa.manhwaName} style={{ width: 50, height: 70, objectFit: 'cover', borderRadius: 4 }} />
-              </Box>
-              <ListItemText 
-                primary={manhwa.manhwaName}
-                secondary={
-                  <>
-                    <Typography component="span" variant="body2" color="text.primary">
-                      Author: {manhwa.author || 'N/A'}
-                    </Typography>
-                    <br />
-                    <Typography component="span" variant="body2" color="text.primary">
-                      Genre: {manhwa.genre || 'N/A'}
-                    </Typography>
-                    <br />
-                    <Typography component="span" variant="body2" color="text.primary">
-                      Status: {manhwa.status || 'N/A'}
-                    </Typography>
-                    <br />
-                    <Typography component="span" variant="body2" color="text.primary">
-                      Last Episode: {manhwa.lastEpisodeReleased || 'N/A'}
-                    </Typography>
-                  </>
-                }
-              />
-            </ListItem>
+              manhwa={manhwa}
+              onAdd={() => handleOpenModal(manhwa.manhwaId, manhwa.manhwaName, manhwa.coverImage)}
+            />
           ))}
         </List>
       )}
       {totalItems > 0 && (
         <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
           <Pagination
-            count={Math.ceil(totalItems / pageSize)} // Assuming 10 items per page for search results
+            count={Math.ceil(totalItems / pageSize)}
             page={page}
             onChange={(event, value) => setPage(value)}
             color="primary"
