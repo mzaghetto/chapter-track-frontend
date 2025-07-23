@@ -3,8 +3,13 @@ import { Navigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { CircularProgress, Box } from '@mui/material';
 
-const PrivateRoute = ({ children }: { children: React.ReactElement }) => {
-  const { isAuthenticated, loading } = useAuth();
+interface PrivateRouteProps {
+  children: React.ReactElement;
+  requiredRole?: 'ADMIN';
+}
+
+const PrivateRoute = ({ children, requiredRole }: PrivateRouteProps) => {
+  const { isAuthenticated, loading, user } = useAuth();
 
   if (loading) {
     return (
@@ -14,7 +19,15 @@ const PrivateRoute = ({ children }: { children: React.ReactElement }) => {
     );
   }
 
-  return isAuthenticated ? children : <Navigate to="/login" />;
+  if (!isAuthenticated) {
+    return <Navigate to="/login" />;
+  }
+
+  if (requiredRole && user?.role !== requiredRole) {
+    return <Navigate to="/dashboard" />;
+  }
+
+  return children;
 };
 
 export default PrivateRoute;

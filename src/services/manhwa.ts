@@ -56,10 +56,13 @@ export const updateUserManhwa = (token: string, manhwaId: string, data: any) => 
     });
 };
 
-export const getProviders = (token: string) => {
+export const getProviders = (token: string, searchTerm?: string) => {
     return api.get('/providers', {
         headers: {
         Authorization: `Bearer ${token}`,
+        },
+        params: {
+            searchTerm,
         },
     });
 };
@@ -71,6 +74,14 @@ export const getManhwaProviders = (token: string, manhwaId: number) => {
         },
         params: {
             manhwaId,
+        },
+    });
+};
+
+export const getManhwaById = (token: string, manhwaId: string) => {
+    return api.get(`/manhwa/${manhwaId}`, {
+        headers: {
+            Authorization: `Bearer ${token}`,
         },
     });
 };

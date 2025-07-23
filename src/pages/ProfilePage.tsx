@@ -80,6 +80,9 @@ const ProfilePage = () => {
                     MangaToRead
                 </Typography>
                 <Button color="inherit" onClick={handleDashboardClick}>Dashboard</Button>
+                {user?.role === 'ADMIN' && (
+                  <Button color="inherit" onClick={() => navigate('/admin')}>Admin</Button>
+                )}
                 <Button color="inherit" onClick={logout}>Logout</Button>
             </Toolbar>
         </AppBar>

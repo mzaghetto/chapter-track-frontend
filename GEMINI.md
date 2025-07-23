@@ -28,7 +28,7 @@
 - Adjusted Snackbar position to top-center for better visibility.
 - Implemented global 401 Unauthorized error handling to redirect to login page.
 - Fixed `useNavigate` hook usage by creating a `NavigationSetter` component.
-- Implemented the UI for the `LoginPage`, `RegisterPage`, and `DashboardPage` with a modern design using Material-UI.
+- Implemented the UI for the `LoginPage` and `RegisterPage` with a modern design using Material-UI.
 - Beautified the dashboard home to improve UI/UX for showing the manhwas list.
 - Implemented the functionality to display a list of manhwas on the dashboard.
 - Implemented the functionality for users to add, remove, and update their manhwas.
@@ -68,6 +68,61 @@
 - Implemented pagination for manhwa search results.
 - Configured search results `pageSize` to be read from environment variables in `ManhwaSearch.tsx`.
 - Fixed TypeScript error in `filter-manhwa.ts` by correcting destructuring and response.
+- Implemented admin page and route protection, and conditionally displayed the "Admin" link in the navigation.
+- Implemented backend for deleting manhwas and providers.
+- Implemented basic admin page structure with Manhwa and Provider management tabs.
+- Created `admin.ts` service for admin-specific API calls and updated `ManhwaManagement.tsx` and `ProviderManagement.tsx` to use it.
+- Fixed `useCallback` import warnings in `ManhwaManagement.tsx` and `ProviderManagement.tsx`.
+- Fixed `setPageSize` unused variable warnings in `ManhwaSearch.tsx` and `DashboardPage.tsx`.
+- Fixed `ProviderManagement.tsx` `useEffect` dependency warning.
+- Fixed `ManhwasRepository` interface and `InMemoryManhwasRepository` implementation to include `delete` method.
+- Fixed typo in `delete-provider.ts` (`findByID` to `findById`).
+- Updated `get-providers.spec.ts` to pass `searchTerm` to `execute` method.
+- Fixed syntax error in `ManhwaManagement.tsx` (`map` function JSX return`).
+- Fixed `ManhwaManagement.tsx` to correctly display manhwa list by adjusting interfaces and rendering logic.
+- Enhanced `/manhwa/list` endpoint to return more details (author, genre, description, status) and updated frontend to display them.
+- Fixed TypeScript errors in `InMemoryManhwasRepository` and `PrismaManhwasRepository` related to `filterByName` and `genre` filtering.
+- Implemented backend route and service for fetching a single manhwa by ID.
+- Updated `ManhwaManagement.tsx` to fetch full manhwa details when editing.
+- Beautified `ManhwaManagement` UI to show cover, genres, and status in the list, and added status select to dialog.
+- Fixed missing Material-UI imports in `ManhwaManagement.tsx`.
+- Beautified `ManhwaManagement` UI to show genre and status as chips.
+- Enhanced `ManhwaManagement` UI to show genre and status with titles and ensure genre tags wrap to the next line.
+- Improved `ManhwaManagement` UI to align genre and status titles with chips and make titles more prominent.
+- Added vertical spacing between rows of genre tags in `ManhwaManagement` for better readability.
+- Aligned genre titles with tags and prevented tag overlap with action icons in `ManhwaManagement`.
+- Enhanced `ManhwaManagement` UI to give manhwa titles a more prominent, spotlight position.
+- Improved cover image presentation in `ManhwaManagement` with larger size, shadow, and proper scaling.
+- Implemented pagination in `ManhwaManagement` with a configurable page size.
+- Enhanced the "Edit Manhwa" dialog in `ManhwaManagement` with a dynamic genre tag field and a cover image preview.
+- Fixed a React hydration error in `ManhwaManagement` caused by invalid DOM nesting.
+- Improved genre parsing in `ManhwaManagement` to handle both JSON and comma-separated strings.
+- Fixed a TypeScript error and an unused variable warning in `ManhwaManagement`.
+- Made genre parsing in `ManhwaManagement` more robust to handle different data formats.
+- Increased vertical spacing between genre tags in `ManhwaManagement` for better readability (specifically within the edit dialog).
+- Fixed double-stringification of genre data in `ManhwaManagement` when updating manhwas.
+- Implemented a Material-UI confirmation dialog for delete actions in `ManhwaManagement`.
+- Added collapse/expand functionality for genre tags in `ManhwaManagement` to improve UI/UX.
+- Refactored `ManhwaManagement` to use a new `ManhwaListItemWithGenre` component for better encapsulation of genre tag collapse/expand logic.
+- Fixed layout and positioning of "Show More/Less" button and action icons in `ManhwaListItemWithGenre`.
+- Removed unused imports from `ManhwaManagement.tsx`.
+- Re-added missing `AddIcon` import to `ManhwaManagement.tsx`.
+- Implemented `isActive` switch in `ProviderManagement.tsx` for creating/updating providers.
+- Added missing Material-UI imports (`FormControlLabel`, `Switch`) to `ProviderManagement.tsx`.
+- Implemented `ManhwaProviderManagement.tsx` component for assigning manhwas to providers.
+- Added a new tab for "Manhwa-Provider Management" in `AdminPage.tsx`.
+- Added `createManhwaProvider` function to `src/services/admin.ts` and corrected `createProvider` endpoint.
+- Replaced `alert()` pop-ups with Material-UI `Snackbar` for user feedback in `ManhwaProviderManagement.tsx`.
+- Implemented `ManhwaProviderList.tsx` component for displaying paginated and filterable manhwa-provider relationships.
+- Added a new tab for "Manhwa-Provider List" in `AdminPage.tsx`.
+- Removed unused `Button` import from `ManhwaProviderList.tsx`.
+- Corrected the API endpoint for `getManhwaProviders` in `src/services/admin.ts`.
+- Adjusted `ManhwaProviderList.tsx` to send `manhwaName` and `providerId` as filter parameters to the backend.
+- Added missing React imports (`useState`, `useEffect`, `useCallback`) to `ManhwaProviderList.tsx`.
+- Modified `ManhwaProviderList.tsx` to conditionally send `manhwaName` and `providerId` filter parameters to the backend.
+- Removed `searchTerm` from the `params` object in `getManhwaProviders` in `src/services/admin.ts`.
+- Corrected `getManhwaProviders` in `src/services/admin.ts` to conditionally include `manhwaName` and `providerId` in request parameters.
+- Confirmed pagination is implemented in `ManhwaProviderList.tsx` with page size configurable via `REACT_APP_ADMIN_MANHWA_PROVIDER_PAGE_SIZE` environment variable.
 
 ## Next Steps
 

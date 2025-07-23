@@ -40,7 +40,7 @@ const DashboardPage = () => {
   const [openConfirmDialog, setOpenConfirmDialog] = useState(false);
   const [manhwaToRemove, setManhwaToRemove] = useState<number | null>(null);
   const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState(parseInt(process.env.REACT_APP_MANHWAS_PER_PAGE || '8'));
+  const [pageSize, setPageSize] = useState(parseInt(process.env.REACT_APP_MANHWAS_PER_PAGE || '8')); // eslint-disable-line @typescript-eslint/no-unused-vars
   const [totalManhwas, setTotalManhwas] = useState(0);
   const navigate = useNavigate();
 
@@ -144,6 +144,9 @@ const DashboardPage = () => {
           </Typography>
           {user && <Typography sx={{ mr: 2 }}>Welcome, {user.name}!</Typography>}
           <Button color="inherit" onClick={handleProfileClick}>Profile</Button>
+          {user?.role === 'ADMIN' && (
+            <Button color="inherit" onClick={() => navigate('/admin')}>Admin</Button>
+          )}
           <Button color="inherit" onClick={logout}>Logout</Button>
         </Toolbar>
       </AppBar>

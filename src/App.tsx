@@ -6,6 +6,7 @@ import RegisterPage from './pages/RegisterPage';
 import DashboardPage from './pages/DashboardPage';
 import PrivateRoute from './components/PrivateRoute';
 import ProfilePage from './pages/ProfilePage';
+import AdminPage from './pages/AdminPage';
 import NavigationSetter from './components/NavigationSetter'; // Import the new component
 
 function App() {
@@ -30,6 +31,14 @@ function App() {
             element={
               <PrivateRoute>
                 <ProfilePage />
+              </PrivateRoute>
+            }
+          />
+          <Route 
+            path="/admin"
+            element={
+              <PrivateRoute requiredRole="ADMIN">
+                <AdminPage />
               </PrivateRoute>
             }
           />

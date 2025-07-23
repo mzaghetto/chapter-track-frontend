@@ -9,6 +9,7 @@ interface User {
   telegramId: string | null;
   telegramActive: boolean;
   telegramLinkingToken: string | null;
+  role: 'ADMIN' | 'USER';
   // Add other user properties as needed
 }
 
