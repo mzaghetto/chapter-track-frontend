@@ -2,16 +2,26 @@
 import React, { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { generateTelegramLinkingToken, resetTelegramLinking, updateTelegramNotificationStatus } from '../services/notification';
-import { Container, Typography, Button, Box, Switch, FormControlLabel, Paper, CircularProgress, Snackbar } from '@mui/material';
+import { updateProfile } from '../services/auth';
+import { Container, Typography, Button, Box, Switch, FormControlLabel, Paper, CircularProgress, Snackbar, TextField } from '@mui/material';
 import { AppBar, Toolbar } from '@mui/material';
+import Logo from '../components/Logo';
 import { useNavigate } from 'react-router-dom';
 
 const ProfilePage = () => {
-  const { user, token, logout, refreshUserProfile } = useAuth();
+  const { user, token, logout, refreshUserProfile, displayUsernameInHeader, setDisplayUsernameInHeader } = useAuth();
   const [telegramToken, setTelegramToken] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [snackbar, setSnackbar] = useState<{ open: boolean, message: string }>({ open: false, message: '' });
+  const [isEditingUsername, setIsEditingUsername] = useState(false);
+  const [username, setUsername] = useState(user?.username || '');
   const navigate = useNavigate();
+
+  React.useEffect(() => {
+    if (user?.username) {
+      setUsername(user.username);
+    }
+  }, [user?.username]);
 
   const handleGenerateToken = async () => {
     if (token) {
@@ -72,13 +82,30 @@ const ProfilePage = () => {
     setSnackbar({ ...snackbar, open: false });
   };
 
+  const handleSaveUsername = async () => {
+    if (token && user) {
+      setLoading(true);
+      try {
+        await updateProfile(token, { username });
+        await refreshUserProfile();
+        setSnackbar({ open: true, message: 'Username updated successfully!' });
+        setIsEditingUsername(false);
+      } catch (error) {
+        console.error('Failed to update username', error);
+        setSnackbar({ open: true, message: 'Failed to update username.' });
+      } finally {
+        setLoading(false);
+      }
+    }
+  };
+
   return (
     <Box sx={{ flexGrow: 1 }}>
         <AppBar position="static">
             <Toolbar>
-                <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-                    MangaToRead
-                </Typography>
+                <Box sx={{ flexGrow: 1, display: 'flex', alignItems: 'center' }}>
+                  <Logo />
+                </Box>
                 <Button color="inherit" onClick={handleDashboardClick}>Dashboard</Button>
                 {user?.role === 'ADMIN' && (
                   <Button color="inherit" onClick={() => navigate('/admin')}>Admin</Button>
@@ -93,8 +120,51 @@ const ProfilePage = () => {
                 </Typography>
                 <Box sx={{ mt: 3 }}>
                     <Typography variant="h6">User Information</Typography>
-                    <Typography><strong>Name:</strong> {user?.name}</Typography>
+                    <Typography sx={{ mr: 2 }}>Welcome, {displayUsernameInHeader ? user?.username : user?.name}!</Typography>
                     <Typography><strong>Email:</strong> {user?.email}</Typography>
+                    <Box sx={{ display: 'flex', alignItems: 'center', mt: 1 }}>
+                      <Typography><strong>Username:</strong></Typography>
+                      {isEditingUsername ? (
+                        <TextField
+                          variant="standard"
+                          value={username}
+                          onChange={(e) => setUsername(e.target.value)}
+                          sx={{ ml: 1 }}
+                        />
+                      ) : (
+                        <Typography sx={{ ml: 1 }}>{user?.username}</Typography>
+                      )}
+                      {isEditingUsername ? (
+                        <Button
+                          variant="outlined"
+                          size="small"
+                          sx={{ ml: 2 }}
+                          onClick={handleSaveUsername}
+                          disabled={loading}
+                        >
+                          {loading ? <CircularProgress size={20} /> : 'Save'}
+                        </Button>
+                      ) : (
+                        <Button
+                          variant="outlined"
+                          size="small"
+                          sx={{ ml: 2 }}
+                          onClick={() => setIsEditingUsername(true)}
+                        >
+                          Edit
+                        </Button>
+                      )}
+                    </Box>
+                    <FormControlLabel
+                        control={
+                            <Switch
+                                checked={displayUsernameInHeader}
+                                onChange={(e) => setDisplayUsernameInHeader(e.target.checked)}
+                            />
+                        }
+                        label="Show username in header instead of name"
+                        sx={{ mt: 2 }}
+                    />
                 </Box>
                 <Box sx={{ mt: 4 }}>
                     <Typography variant="h6">Telegram Integration</Typography>

@@ -18,6 +18,8 @@ interface AuthContextType {
   token: string | null;
   isAuthenticated: boolean;
   loading: boolean; // Add loading state
+  displayUsernameInHeader: boolean;
+  setDisplayUsernameInHeader: (value: boolean) => void;
   login: (token: string) => void;
   logout: () => void;
   refreshUserProfile: () => Promise<void>;
@@ -29,6 +31,14 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [token, setToken] = useState<string | null>(localStorage.getItem('token'));
   const [loading, setLoading] = useState(true); // Initialize loading to true
+  const [displayUsernameInHeader, setDisplayUsernameInHeader] = useState<boolean>(() => {
+    const storedPreference = localStorage.getItem('displayUsernameInHeader');
+    return storedPreference ? JSON.parse(storedPreference) : false;
+  });
+
+  useEffect(() => {
+    localStorage.setItem('displayUsernameInHeader', JSON.stringify(displayUsernameInHeader));
+  }, [displayUsernameInHeader]);
 
   const refreshUserProfile = useCallback(async () => {
     if (token) {
@@ -59,7 +69,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, token, isAuthenticated: !!token, loading, login, logout, refreshUserProfile }}>
+    <AuthContext.Provider value={{ user, token, isAuthenticated: !!token, loading, login, logout, refreshUserProfile, displayUsernameInHeader, setDisplayUsernameInHeader }}>
       {children}
     </AuthContext.Provider>
   );

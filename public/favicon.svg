@@ -1,0 +1,41 @@
+<svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bookGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#4f46e5;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#7c3aed;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Book stack icon -->
+  <g transform="translate(10, 25)">
+    <!-- Bottom book -->
+    <rect x="0" y="25" width="35" height="8" rx="2" fill="#e5e7eb" stroke="#d1d5db" stroke-width="1"/>
+    <!-- Middle book -->
+    <rect x="2" y="15" width="35" height="8" rx="2" fill="#f3f4f6" stroke="#d1d5db" stroke-width="1"/>
+    <!-- Top book (main) -->
+    <rect x="4" y="5" width="35" height="8" rx="2" fill="url(#bookGradient)" stroke="#6366f1" stroke-width="1"/>
+    
+    <!-- Book spine details -->
+    <line x1="8" y1="7" x2="8" y2="11" stroke="#ffffff" stroke-width="1" opacity="0.7"/>
+    <line x1="35" y1="7" x2="35" y2="11" stroke="#ffffff" stroke-width="1" opacity="0.7"/>
+    
+    <!-- Bookmark -->
+    <g>
+      <!-- Ribbon bookmark strip -->
+      <rect x="19" y="3" width="6" height="12" fill="#ef4444"/>
+      <polygon points="19,15 25,15 22,18" fill="#ef4444"/>
+    </g>
+  </g>
+  
+  <!-- Progress tracking element -->
+  <g transform="translate(45, 30)">
+    <!-- Progress circle -->
+    <circle cx="15" cy="15" r="12" fill="none" stroke="#e5e7eb" stroke-width="3"/>
+    <circle cx="15" cy="15" r="12" fill="none" stroke="url(#bookGradient)" stroke-width="3" 
+            stroke-dasharray="28.27" stroke-dashoffset="7" stroke-linecap="round" 
+            transform="rotate(-90 15 15)"/>
+    
+    <!-- Check mark in center -->
+    <path d="M10 15 L13 18 L20 11" stroke="#4f46e5" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+</svg>

@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { getUserManhwas, removeManhwaFromUser } from '../services/manhwa';
-import { AppBar, Toolbar, Typography, Button, Container, Box, IconButton, CircularProgress, Switch, Card, CardMedia, CardContent, CardActions, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Pagination } from '@mui/material';
+import { AppBar, Toolbar, Typography, Button, Container, Box, IconButton, Switch, Card, CardMedia, CardContent, CardActions, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Pagination } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
 import ManhwaSearch from '../components/ManhwaSearch';
@@ -10,6 +10,7 @@ import ProviderFilter from '../components/ProviderFilter';
 import { registerManhwaNotification } from '../services/notification';
 import UpdateManhwaModal from '../components/UpdateManhwaModal';
 import ManhwaCardSkeleton from '../components/ManhwaCardSkeleton';
+import Logo from '../components/Logo';
 
 interface DetailedUserManhwa {
   id: number;
@@ -32,7 +33,7 @@ interface DetailedUserManhwa {
 }
 
 const DashboardPage = () => {
-  const { user, token, logout } = useAuth();
+  const { user, token, logout, displayUsernameInHeader } = useAuth();
   const [manhwas, setManhwas] = useState<DetailedUserManhwa[]>([]);
   const [filteredManhwas, setFilteredManhwas] = useState<DetailedUserManhwa[]>([]);
   const [selectedManhwa, setSelectedManhwa] = useState<DetailedUserManhwa | null>(null);
@@ -140,10 +141,10 @@ const DashboardPage = () => {
     <Box sx={{ flexGrow: 1 }}>
       <AppBar position="static">
         <Toolbar>
-          <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-            MangaToRead
-          </Typography>
-          {user && <Typography sx={{ mr: 2 }}>Welcome, {user.name}!</Typography>}
+          <Box sx={{ flexGrow: 1, display: 'flex', alignItems: 'center' }}>
+            <Logo />
+          </Box>
+          {user && <Typography sx={{ mr: 2 }}>Welcome, {displayUsernameInHeader ? user.username : user.name}!</Typography>}
           <Button color="inherit" onClick={handleProfileClick}>Profile</Button>
           {user?.role === 'ADMIN' && (
             <Button color="inherit" onClick={() => navigate('/admin')}>Admin</Button>

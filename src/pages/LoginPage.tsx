@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { login, googleSSO } from '../services/auth';
-import { Button, TextField, Container, Typography, Box } from '@mui/material';
+import { Button, TextField, Container, Typography, Box, AppBar, Toolbar } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import { GoogleOAuthProvider, GoogleLogin } from '@react-oauth/google';
+import Logo from '../components/Logo';
 
 const LoginPage = () => {
   const { login: authLogin, isAuthenticated } = useAuth();
@@ -47,6 +48,13 @@ const LoginPage = () => {
 
   return (
     <GoogleOAuthProvider clientId={process.env.REACT_APP_GOOGLE_CLIENT_ID || ''}>
+      <AppBar position="static">
+        <Toolbar>
+          <Box sx={{ flexGrow: 1, display: 'flex', alignItems: 'center' }}>
+            <Logo />
+          </Box>
+        </Toolbar>
+      </AppBar>
       <Container maxWidth="xs">
         <Box
           sx={{

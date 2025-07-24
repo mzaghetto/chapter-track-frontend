@@ -6,6 +6,7 @@ import ManhwaManagement from '../components/ManhwaManagement';
 import ProviderManagement from '../components/ProviderManagement';
 import ManhwaProviderManagement from '../components/ManhwaProviderManagement';
 import ManhwaProviderList from '../components/ManhwaProviderList';
+import Logo from '../components/Logo';
 
 const AdminPage = () => {
   const navigate = useNavigate();
@@ -24,9 +25,9 @@ const AdminPage = () => {
     <Box sx={{ flexGrow: 1 }}>
       <AppBar position="static">
         <Toolbar>
-          <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-            MangaToRead Admin
-          </Typography>
+          <Box sx={{ flexGrow: 1, display: 'flex', alignItems: 'center' }}>
+            <Logo />
+          </Box>
           <Button color="inherit" onClick={handleDashboardClick}>Dashboard</Button>
           <Button color="inherit" onClick={logout}>Logout</Button>
         </Toolbar>

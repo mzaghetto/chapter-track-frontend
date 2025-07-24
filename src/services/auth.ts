@@ -45,7 +45,7 @@ export const getProfile = (token: string) => {
   });
 };
 
-export const updateProfile = (token: string, data: any) => {
+export const updateProfile = (token: string, data: { username?: string }) => {
   return api.patch('/me', data, {
     headers: {
       Authorization: `Bearer ${token}`,
