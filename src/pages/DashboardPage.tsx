@@ -1,7 +1,11 @@
 import React, { useCallback, useEffect, useState } from 'react';
+import { keyframes } from '@emotion/react';
 import { useAuth } from '../contexts/AuthContext';
-import { getUserManhwas, removeManhwaFromUser } from '../services/manhwa';
-import { AppBar, Toolbar, Typography, Button, Container, Box, IconButton, Switch, Card, CardMedia, CardContent, CardActions, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Pagination } from '@mui/material';
+import { getUserManhwas, removeManhwaFromUser, updateUserManhwa } from '../services/manhwa';
+import { AppBar, Toolbar, Typography, Button, Container, Box, IconButton, Switch, Card, CardMedia, CardContent, CardActions, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Pagination, Chip, Divider, Tooltip } from '@mui/material';
+import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
+import AddIcon from '@mui/icons-material/Add';
+import RemoveIcon from '@mui/icons-material/Remove';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
 import ManhwaSearch from '../components/ManhwaSearch';
@@ -12,25 +16,19 @@ import UpdateManhwaModal from '../components/UpdateManhwaModal';
 import ManhwaCardSkeleton from '../components/ManhwaCardSkeleton';
 import Logo from '../components/Logo';
 
-interface DetailedUserManhwa {
-  id: number;
-  manhwaId: number;
-  manhwaName: string;
-  coverImage: string | null;
-  providerId: number | null;
-  providerName: string | null;
-  lastEpisodeReleased: number | null;
-  manhwaUrlProvider: string | null;
-  statusReading: 'READING' | 'TO_READ' | 'COMPLETED' | 'ON_HOLD' | 'DROPPED';
-  statusManhwa: 'ONGOING' | 'COMPLETED' | 'HIATUS' | null;
-  lastEpisodeRead: number | null;
-  lastNotifiedEpisode: number | null;
-  isTelegramNotificationEnabled?: boolean; // Added this field
-  order: number;
-  lastUpdated: Date | null;
-  createdAt: Date;
-  updatedAt: Date;
-}
+import { DetailedUserManhwa } from '../types/manhwa';
+
+const pulse = keyframes`
+  0% {
+    box-shadow: 0 0 0 0 rgba(255, 165, 0, 0.7);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(255, 165, 0, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(255, 165, 0, 0);
+  }
+`;
 
 const DashboardPage = () => {
   const { user, token, logout, displayUsernameInHeader } = useAuth();
@@ -97,7 +95,7 @@ const DashboardPage = () => {
     if (providerId === '') {
       setFilteredManhwas(manhwas);
     } else {
-      const filtered = manhwas.filter(manhwa => manhwa.providerId === providerId);
+      const filtered = manhwas.filter(manhwa => manhwa.providerId.toString() === providerId.toString());
       setFilteredManhwas(filtered);
     }
   };
@@ -137,6 +135,23 @@ const DashboardPage = () => {
     handleCloseConfirmDialog();
   };
 
+  const handleEpisodeChange = async (manhwaId: string, newEpisode: number) => {
+    if (token) {
+      try {
+        const updatedManhwas = manhwas.map((m) =>
+          m.id === manhwaId ? { ...m, lastEpisodeRead: newEpisode } : m,
+        );
+        setManhwas(updatedManhwas);
+        setFilteredManhwas(updatedManhwas);
+
+        // Call backend to update
+        await updateUserManhwa(token, manhwaId, { lastEpisodeRead: newEpisode });
+      } catch (error) {
+        console.error('Failed to update last episode read', error);
+      }
+    }
+  };
+
   return (
     <Box sx={{ flexGrow: 1 }}>
       <AppBar position="static">
@@ -170,35 +185,112 @@ const DashboardPage = () => {
         ) : (
           <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))', gap: 3 }}>
             {filteredManhwas.map((manhwa) => (
-              <Card key={manhwa.id} sx={{ display: 'flex', flexDirection: 'column' }}>
-                <CardMedia
-                  component="img"
-                  height="250"
-                  image={manhwa.coverImage || 'https://via.placeholder.com/250/cccccc/ffffff?text=No+Image'} // Placeholder if no image
-                  alt={manhwa.manhwaName}
-                  sx={{ objectFit: 'cover' }}
-                />
-                <CardContent sx={{ flexGrow: 1, pb: 0 }}>
-                  <Typography gutterBottom variant="h6" component="div" sx={{ fontSize: '1.1rem', lineHeight: 1.3 }}>
-                    {manhwa.manhwaName}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary" sx={{ mb: 0.5 }}>
-                    Provider: {manhwa.providerName}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    Last Episode Read: {manhwa.lastEpisodeRead}
-                  </Typography>
-                  {manhwa.lastEpisodeReleased && typeof manhwa.lastEpisodeRead === 'number' && manhwa.lastEpisodeReleased > manhwa.lastEpisodeRead && (
-                    <Typography variant="body2" color="primary" sx={{ mt: 1, fontWeight: 'bold' }}>
-                      New Episode Available! ({manhwa.lastEpisodeReleased})
-                    </Typography>
+              <Card
+                key={manhwa.id}
+                sx={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  border: manhwa.lastEpisodeReleased && typeof manhwa.lastEpisodeRead === 'number' && manhwa.lastEpisodeReleased > manhwa.lastEpisodeRead
+                    ? '2px solid orange'
+                    : 'none',
+                  animation: manhwa.lastEpisodeReleased && typeof manhwa.lastEpisodeRead === 'number' && manhwa.lastEpisodeReleased > manhwa.lastEpisodeRead
+                    ? `${pulse} 1.5s infinite`
+                    : 'none',
+                }}
+              >
+                <Box sx={{ position: 'relative' }}>
+                  <CardMedia
+                    component="img"
+                    height="250"
+                    image={manhwa.coverImage || 'https://via.placeholder.com/250/cccccc/ffffff?text=No+Image'} // Placeholder if no image
+                    alt={manhwa.manhwaName}
+                    sx={{ objectFit: 'cover' }}
+                  />
+                  {manhwa.lastEpisodeReleasedAllProviders !== null && manhwa.lastEpisodeReleased !== null && manhwa.lastEpisodeReleasedAllProviders > manhwa.lastEpisodeReleased && (
+                    <Tooltip title={`Newer episodes available from other providers! (Latest: ${manhwa.lastEpisodeReleasedAllProviders})`} arrow>
+                      <InfoOutlinedIcon
+                        sx={{
+                          position: 'absolute',
+                          top: 8,
+                          left: 8,
+                          color: 'info.main',
+                          fontSize: 30,
+                          backgroundColor: 'rgba(255, 255, 255, 0.8)',
+                          borderRadius: '50%',
+                          p: 0.5,
+                        }}
+                      />
+                    </Tooltip>
                   )}
+                  {manhwa.lastEpisodeReleased && typeof manhwa.lastEpisodeRead === 'number' && manhwa.lastEpisodeReleased > manhwa.lastEpisodeRead && (
+                    <Tooltip title={`New Episode Available! (${manhwa.lastEpisodeReleased})` + (manhwa.lastEpisodeReleasedAllProviders !== manhwa.lastEpisodeReleased ? ` (Latest: ${manhwa.lastEpisodeReleasedAllProviders})` : '')} arrow>
+                      <InfoOutlinedIcon
+                        sx={{
+                          position: 'absolute',
+                          top: 8,
+                          right: 8,
+                          color: 'warning.main',
+                          fontSize: 30,
+                          backgroundColor: 'rgba(255, 255, 255, 0.8)',
+                          borderRadius: '50%',
+                          p: 0.5,
+                        }}
+                      />
+                    </Tooltip>
+                  )}
+                </Box>
+                <CardContent sx={{ flexGrow: 1, p: 0 }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', mb: 0.5, px: 2, pt: 2 }}>
+                    <Typography
+                      variant="h6"
+                      component="div"
+                      sx={{
+                        fontSize: '1.1rem',
+                        lineHeight: 1.3,
+                        mb: 0,
+                        flexGrow: 1,
+                        display: '-webkit-box',
+                        overflow: 'hidden',
+                        WebkitLineClamp: 2,
+                        WebkitBoxOrient: 'vertical',
+                        minHeight: '2.86rem', // Equivalent to 2 lines of 1.1rem font-size with 1.3 line-height
+                      }}
+                      title={manhwa.manhwaName}
+                    >
+                      {manhwa.manhwaName}
+                    </Typography>
+                    <Chip label={manhwa.providerName} size="small" sx={{ ml: 1 }} />
+                  </Box>
+                  <Divider sx={{ my: 1, width: '100%' }} />
+                  <Typography variant="body2" color="text.secondary" sx={{ display: 'flex', alignItems: 'center', px: 2, pb: 2 }}>
+                    Last Episode Read:
+                    <IconButton
+                      size="small"
+                      onClick={() => handleEpisodeChange(manhwa.id, (manhwa.lastEpisodeRead || 0) - 1)}
+                      disabled={(manhwa.lastEpisodeRead || 0) <= 0}
+                      sx={{ ml: 1 }}
+                    >
+                      <RemoveIcon fontSize="inherit" />
+                    </IconButton>
+                    <Typography variant="body2" component="span" sx={{ mx: 0.5 }}>
+                      {manhwa.lastEpisodeRead}
+                    </Typography>
+                    <IconButton
+                      size="small"
+                      onClick={() => handleEpisodeChange(manhwa.id, (manhwa.lastEpisodeRead || 0) + 1)}
+                    >
+                      <AddIcon fontSize="inherit" />
+                    </IconButton>
+                  </Typography>
+                  
+                  
+                  
                 </CardContent>
                 <CardActions sx={{ justifyContent: 'space-between', p: 2, pt: 1 }}>
                   <Box sx={{ display: 'flex', alignItems: 'center' }}>
                     <Switch
                       edge="start"
-                      onChange={(e) => handleNotificationChange(manhwa.manhwaId, e.target.checked)}
+                      onChange={(e) => handleNotificationChange(parseInt(manhwa.manhwaId), e.target.checked)}
                       checked={manhwa.isTelegramNotificationEnabled || false}
                       inputProps={{ 'aria-label': 'toggle telegram notifications' }}
                     />
@@ -210,7 +302,7 @@ const DashboardPage = () => {
                     <IconButton aria-label="edit" onClick={() => handleOpenModal(manhwa)} size="small">
                       <EditIcon fontSize="small" />
                     </IconButton>
-                    <IconButton aria-label="delete" onClick={() => handleOpenConfirmDialog(manhwa.manhwaId)} size="small">
+                    <IconButton aria-label="delete" onClick={() => handleOpenConfirmDialog(parseInt(manhwa.manhwaId))} size="small">
                       <DeleteIcon fontSize="small" />
                     </IconButton>
                   </Box>

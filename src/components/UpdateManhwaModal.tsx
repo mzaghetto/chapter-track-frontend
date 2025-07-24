@@ -3,24 +3,7 @@ import { Button, TextField, Dialog, DialogActions, DialogContent, DialogContentT
 import { updateUserManhwa, getManhwaProviders } from '../services/manhwa';
 import { useAuth } from '../contexts/AuthContext';
 
-interface DetailedUserManhwa {
-    id: number;
-    manhwaId: number;
-    manhwaName: string;
-    coverImage: string | null;
-    providerId: number | null;
-    providerName: string | null;
-    lastEpisodeReleased: number | null;
-    manhwaUrlProvider: string | null;
-    statusReading: 'READING' | 'TO_READ' | 'COMPLETED' | 'ON_HOLD' | 'DROPPED';
-    statusManhwa: 'ONGOING' | 'COMPLETED' | 'HIATUS' | null;
-    lastEpisodeRead: number | null;
-    lastNotifiedEpisode: number | null;
-    order: number;
-    lastUpdated: Date | null;
-    createdAt: Date;
-    updatedAt: Date;
-  }
+import { DetailedUserManhwa } from '../types/manhwa';
 
   interface ManhwaProvider {
     id: number;
@@ -38,13 +21,13 @@ interface UpdateManhwaModalProps {
 const UpdateManhwaModal: React.FC<UpdateManhwaModalProps> = ({ open, handleClose, manhwa, onManhwaUpdated }) => {
   const { token } = useAuth();
   const [lastEpisodeRead, setLastEpisodeRead] = useState(manhwa?.lastEpisodeRead || 0);
-  const [selectedProvider, setSelectedProvider] = useState<number | null>(manhwa?.providerId || null);
+  const [selectedProvider, setSelectedProvider] = useState<string | null>(manhwa?.providerId || null);
   const [providers, setProviders] = useState<ManhwaProvider[]>([]);
 
   useEffect(() => {
     setLastEpisodeRead(manhwa?.lastEpisodeRead || 0);
     if (token && manhwa) {
-        getManhwaProviders(token, manhwa.manhwaId)
+        getManhwaProviders(token, parseInt(manhwa.manhwaId))
             .then(response => {
                 setProviders(response.data.manhwaProviders);
 
@@ -103,7 +86,7 @@ const UpdateManhwaModal: React.FC<UpdateManhwaModalProps> = ({ open, handleClose
             labelId="provider-select-label"
             id="provider-select"
             value={selectedProvider || ''}
-            onChange={(e) => setSelectedProvider(e.target.value as number)}
+            onChange={(e) => setSelectedProvider(e.target.value)}
           >
             {providers.map((provider) => (
               <MenuItem key={provider.id} value={provider.providerId}>

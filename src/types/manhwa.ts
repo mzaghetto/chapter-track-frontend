@@ -9,3 +9,24 @@ export interface Manhwa {
   source_id: string;
   genres: string[];
 }
+
+export interface DetailedUserManhwa {
+  id: string;
+  manhwaId: string;
+  manhwaName: string;
+  coverImage: string;
+  providerId: string;
+  providerName: string;
+  lastEpisodeReleased: number;
+  lastEpisodeReleasedAllProviders: number;
+  manhwaUrlProvider: string;
+  statusReading: string;
+  statusManhwa: string;
+  lastEpisodeRead: number;
+  lastNotifiedEpisode: number;
+  isTelegramNotificationEnabled: boolean;
+  order: number;
+  lastUpdated: string;
+  createdAt: string;
+  updatedAt: string;
+}
