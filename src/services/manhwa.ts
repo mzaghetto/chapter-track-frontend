@@ -85,3 +85,11 @@ export const getManhwaById = (token: string, manhwaId: string) => {
         },
     });
 };
+
+export const getRandomManhwas = (count: number = 10) => {
+    return api.get('/manhwa/random', {
+        params: {
+            count,
+        },
+    });
+};
