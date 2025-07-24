@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { register } from '../services/auth';
-import { Button, TextField, Container, Typography, Box } from '@mui/material';
+import { Button, TextField, Container, Typography, Box, AppBar, Toolbar } from '@mui/material';
+import Logo from '../components/Logo';
 import { useNavigate } from 'react-router-dom';
 
 const RegisterPage = () => {
@@ -21,19 +22,27 @@ const RegisterPage = () => {
   };
 
   return (
-    <Container maxWidth="xs">
-      <Box
-        sx={{
-          marginTop: 8,
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-        }}
-      >
-        <Typography component="h1" variant="h5">
-          Register
-        </Typography>
-        <Box component="form" onSubmit={handleSubmit} sx={{ mt: 1 }}>
+    <>
+      <AppBar position="static">
+        <Toolbar>
+          <Box sx={{ flexGrow: 1, display: 'flex', alignItems: 'center' }}>
+            <Logo />
+          </Box>
+        </Toolbar>
+      </AppBar>
+      <Container maxWidth="xs">
+        <Box
+          sx={{
+            marginTop: 8,
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+          }}
+        >
+          <Typography component="h1" variant="h5">
+            Register
+          </Typography>
+          <Box component="form" onSubmit={handleSubmit} sx={{ mt: 1 }}>
           <TextField
             margin="normal"
             required
@@ -88,9 +97,18 @@ const RegisterPage = () => {
           >
             Sign Up
           </Button>
+          <Button
+            fullWidth
+            variant="text"
+            onClick={() => navigate('/login')}
+            sx={{ mb: 2 }}
+          >
+            Already have an account? Login
+          </Button>
         </Box>
       </Box>
     </Container>
+    </>
   );
 };
 

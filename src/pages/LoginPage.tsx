@@ -100,6 +100,14 @@ const LoginPage = () => {
             >
               Sign In
             </Button>
+            <Button
+              fullWidth
+              variant="text"
+              onClick={() => navigate('/register')}
+              sx={{ mb: 2 }}
+            >
+              Don't have an account? Register
+            </Button>
           </Box>
           <Box sx={{ mt: 2 }}>
             <GoogleLogin
