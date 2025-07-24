@@ -33,7 +33,7 @@ export const deleteManhwa = (token: string, manhwaId: string) => {
 
 // Provider Admin Operations
 export const createProvider = (token: string, data: any) => {
-  return api.post('/providers/create', data, {
+  return api.post('/provider/create', data, {
     headers: {
       Authorization: `Bearer ${token}`,
     },
