@@ -15,17 +15,19 @@ interface UpdateManhwaModalProps {
   open: boolean;
   handleClose: () => void;
   manhwa: DetailedUserManhwa | null;
-  onManhwaUpdated: () => void;
+  onManhwaUpdated: (updatedManhwa?: any) => void;
 }
 
 const UpdateManhwaModal: React.FC<UpdateManhwaModalProps> = ({ open, handleClose, manhwa, onManhwaUpdated }) => {
   const { token } = useAuth();
   const [lastEpisodeRead, setLastEpisodeRead] = useState(manhwa?.lastEpisodeRead || 0);
   const [selectedProvider, setSelectedProvider] = useState<string | null>(manhwa?.providerId || null);
+  const [status, setStatus] = useState(manhwa?.statusReading || 'READING');
   const [providers, setProviders] = useState<ManhwaProvider[]>([]);
 
   useEffect(() => {
     setLastEpisodeRead(manhwa?.lastEpisodeRead || 0);
+    setStatus(manhwa?.statusReading || 'READING');
     if (token && manhwa) {
         getManhwaProviders(token, parseInt(manhwa.manhwaId))
             .then(response => {
@@ -50,11 +52,12 @@ const UpdateManhwaModal: React.FC<UpdateManhwaModalProps> = ({ open, handleClose
   const handleUpdate = async () => {
     if (token && manhwa) {
       try {
-        await updateUserManhwa(token, manhwa.id.toString(), { 
+        const response = await updateUserManhwa(token, manhwa.id.toString(), { 
             lastEpisodeRead: lastEpisodeRead,
-            providerId: selectedProvider
+            providerId: selectedProvider,
+            status: status
         });
-        onManhwaUpdated();
+        onManhwaUpdated(response.data.userManhwa);
         handleClose();
       } catch (error) {
         console.error('Failed to update manhwa', error);
@@ -93,6 +96,20 @@ const UpdateManhwaModal: React.FC<UpdateManhwaModalProps> = ({ open, handleClose
                 {provider.providerName}
               </MenuItem>
             ))}
+          </Select>
+        </FormControl>
+        <FormControl fullWidth margin="dense">
+          <InputLabel id="status-select-label">Status</InputLabel>
+          <Select
+            labelId="status-select-label"
+            id="status-select"
+            value={status}
+            onChange={(e) => setStatus(e.target.value)}
+          >
+            <MenuItem value="READING">Currently Reading</MenuItem>
+            <MenuItem value="PAUSED">On Pause</MenuItem>
+            <MenuItem value="DROPPED">Dropped</MenuItem>
+            <MenuItem value="COMPLETED">Completed</MenuItem>
           </Select>
         </FormControl>
       </DialogContent>

@@ -6,14 +6,16 @@ const api = axios.create({
   baseURL: API_URL,
 });
 
-export const getUserManhwas = (token: string, page?: number, pageSize?: number) => {
+export const getUserManhwas = (token: string, page?: number, pageSize?: number, status?: 'ONGOING' | 'COMPLETED' | 'HIATUS', userStatus?: 'READING' | 'PAUSED' | 'DROPPED' | 'COMPLETED') => {
   return api.get('/user/manhwas', {
     headers: {
       Authorization: `Bearer ${token}`,
     },
     params: {
         page,
-        pageSize
+        pageSize,
+        status,
+        userStatus
     }
   });
 };
