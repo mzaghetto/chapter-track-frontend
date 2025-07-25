@@ -8,6 +8,7 @@ import PrivateRoute from './components/PrivateRoute';
 import ProfilePage from './pages/ProfilePage';
 import AdminPage from './pages/AdminPage';
 import HomePage from './pages/HomePage';
+import AddManhwaPage from './pages/AddManhwaPage';
 import NavigationSetter from './components/NavigationSetter';
 
 function App() {
@@ -35,11 +36,19 @@ function App() {
               </PrivateRoute>
             }
           />
-          <Route 
+          <Route
             path="/admin"
             element={
               <PrivateRoute requiredRole="ADMIN">
                 <AdminPage />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/add-manhwa"
+            element={
+              <PrivateRoute>
+                <AddManhwaPage />
               </PrivateRoute>
             }
           />

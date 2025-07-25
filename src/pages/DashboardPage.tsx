@@ -1,7 +1,8 @@
-import React, { useState, useCallback } from 'react';
-import { Box, Container, Typography } from '@mui/material';
+import React, { useState } from 'react';
+import { Box, Container, Typography, Button } from '@mui/material';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import ManhwaSearch from '../components/ManhwaSearch';
+
 import DashboardHeader from '../components/DashboardHeader';
 import ManhwaStatusFilter from '../components/ManhwaStatusFilter';
 import UserManhwaSection from '../components/UserManhwaSection';
@@ -11,6 +12,7 @@ import { DetailedUserManhwa } from '../types/manhwa';
 import { removeManhwaFromUser } from '../services/manhwa';
 
 const DashboardPage = () => {
+  const navigate = useNavigate();
   const { user, token, logout } = useAuth();
   const [status, setStatus] = useState('');
   const [refresh, setRefresh] = useState(false);
@@ -23,9 +25,7 @@ const DashboardPage = () => {
     setStatus(newStatus);
   };
 
-  const handleManhwaAdded = useCallback(() => {
-    setRefresh(prev => !prev);
-  }, []);
+  
 
   const handleOpenModal = (manhwa: DetailedUserManhwa) => {
     setSelectedManhwa(manhwa);
@@ -68,7 +68,9 @@ const DashboardPage = () => {
     <Box sx={{ flexGrow: 1 }}>
       <DashboardHeader user={user} onLogout={logout} />
       <Container sx={{ mt: 4 }}>
-        <ManhwaSearch onManhwaAdded={handleManhwaAdded} />
+        <Button variant="contained" onClick={() => navigate('/add-manhwa')} sx={{ mb: 2 }}>
+          Add New Manhwa
+        </Button>
         <ManhwaStatusFilter status={status} onStatusChange={handleStatusChange} />
         <Typography variant="h4" component="h1" gutterBottom sx={{ mt: 4 }}>
           Your Manhwas

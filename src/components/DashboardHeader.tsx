@@ -29,6 +29,7 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({ user, onLogout }) => 
         </Box>
         {user && <Typography sx={{ mr: 2 }}>Welcome, {displayUsernameInHeader ? user.username : user.name}!</Typography>}
         <Button color="inherit" onClick={handleProfileClick}>Profile</Button>
+        <Button color="inherit" onClick={() => navigate('/add-manhwa')}>Add Manhwa</Button>
         {user?.role === 'ADMIN' && (
           <Button color="inherit" onClick={() => navigate('/admin')}>Admin</Button>
         )}
