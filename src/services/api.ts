@@ -53,12 +53,12 @@ api.interceptors.response.use(
             resolve(api(originalRequest));
           })
           .catch(err => {
-            processQueue(err, null);
             localStorage.removeItem('token');
             const navigate = getNavigate();
             if (navigate) {
               navigate('/login');
             }
+            processQueue(err, null);
             reject(err);
           })
           .finally(() => {
