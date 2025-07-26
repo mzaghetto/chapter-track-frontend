@@ -1,10 +1,4 @@
-import axios from 'axios';
-
-const API_URL = process.env.REACT_APP_API_URL;
-
-const api = axios.create({
-  baseURL: API_URL,
-});
+import api from './api';
 
 export const getUserManhwas = (token: string, page?: number, pageSize?: number, status?: 'ONGOING' | 'COMPLETED' | 'HIATUS', userStatus?: 'READING' | 'PAUSED' | 'DROPPED' | 'COMPLETED') => {
   return api.get('/user/manhwas', {
