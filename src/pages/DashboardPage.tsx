@@ -68,13 +68,14 @@ const DashboardPage = () => {
     <Box sx={{ flexGrow: 1 }}>
       <DashboardHeader user={user} onLogout={logout} />
       <Container sx={{ mt: 4 }}>
-        <Button variant="contained" onClick={() => navigate('/add-manhwa')} sx={{ mb: 2 }}>
-          Add New Manhwa
-        </Button>
-        <ManhwaStatusFilter status={status} onStatusChange={handleStatusChange} />
-        <Typography variant="h4" component="h1" gutterBottom sx={{ mt: 4 }}>
-          Your Manhwas
-        </Typography>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 4 }}>
+          <Typography variant="h4" component="h1">
+            Your Manhwas
+          </Typography>
+          <Button variant="contained" onClick={() => navigate('/add-manhwa')}>
+            Add New Manhwa
+          </Button>
+        </Box>
         <UserManhwaSection userStatus="READING" statusFilter={status} refresh={refresh} onEdit={handleOpenModal} onConfirmDelete={handleOpenConfirmDialog} />
         <UserManhwaSection userStatus="PAUSED" statusFilter={status} refresh={refresh} onEdit={handleOpenModal} onConfirmDelete={handleOpenConfirmDialog} />
         <UserManhwaSection userStatus="DROPPED" statusFilter={status} refresh={refresh} onEdit={handleOpenModal} onConfirmDelete={handleOpenConfirmDialog} />
