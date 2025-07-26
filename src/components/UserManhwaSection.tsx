@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Accordion, AccordionSummary, AccordionDetails, Box, Typography, Pagination, CircularProgress } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { DetailedUserManhwa } from '../types/manhwa';
@@ -28,7 +28,7 @@ const UserManhwaSection: React.FC<UserManhwaSectionProps> = ({ userStatus, onEdi
   const [totalManhwas, setTotalManhwas] = useState(0);
   const [loading, setLoading] = useState(true);
   const [isExpanded, setIsExpanded] = useState(false);
-  const [hasFetchedOnce, setHasFetchedOnce] = useState(false);
+  const hasFetchedOnce = useRef(false);
 
   const pageSize = parseInt(process.env.REACT_APP_MANHWAS_PER_PAGE || '8');
 
@@ -43,9 +43,9 @@ const UserManhwaSection: React.FC<UserManhwaSectionProps> = ({ userStatus, onEdi
       setTotalManhwas(total);
       setTotalPages(Math.ceil(total / pageSize));
 
-      if (!hasFetchedOnce) {
+      if (!hasFetchedOnce.current) {
         setIsExpanded(total > 0);
-        setHasFetchedOnce(true);
+        hasFetchedOnce.current = true;
       }
     } catch (error) {
       console.error(`Failed to fetch ${userStatus} manhwas`, error);
@@ -72,7 +72,7 @@ const UserManhwaSection: React.FC<UserManhwaSectionProps> = ({ userStatus, onEdi
         <Typography variant="h6">{statusLabels[userStatus]} ({totalManhwas})</Typography>
       </AccordionSummary>
       <AccordionDetails>
-        {loading && !hasFetchedOnce ? (
+        {loading && !hasFetchedOnce.current ? (
           <CircularProgress />
         ) : (
           <>
