@@ -26,19 +26,17 @@ const pulse = keyframes`
 
 interface ManhwaCardProps {
   manhwa: DetailedUserManhwa;
-  onUpdate: () => void;
   onEdit: (manhwa: DetailedUserManhwa) => void;
   onConfirmDelete: (manhwaId: number) => void;
 }
 
-const ManhwaCard: React.FC<ManhwaCardProps> = ({ manhwa, onUpdate, onEdit, onConfirmDelete }) => {
+const ManhwaCard: React.FC<ManhwaCardProps> = ({ manhwa, onEdit, onConfirmDelete }) => {
   const { token } = useAuth();
 
   const handleEpisodeChange = async (newEpisode: number) => {
     if (token) {
       try {
         await updateUserManhwa(token, manhwa.id, { lastEpisodeRead: newEpisode });
-        onUpdate();
       } catch (error) {
         console.error('Failed to update last episode read', error);
       }
@@ -49,7 +47,6 @@ const ManhwaCard: React.FC<ManhwaCardProps> = ({ manhwa, onUpdate, onEdit, onCon
     if (token) {
       try {
         await registerManhwaNotification(token, parseInt(manhwa.manhwaId), 'TELEGRAM', isEnabled);
-        onUpdate();
       } catch (error) {
         console.error('Failed to update notification status', error);
       }

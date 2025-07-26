@@ -8,10 +8,9 @@ import ManhwaCard from './ManhwaCard';
 
 interface UserManhwaSectionProps {
   userStatus: 'READING' | 'PAUSED' | 'DROPPED' | 'COMPLETED';
-  statusFilter: string;
-  refresh: boolean;
   onEdit: (manhwa: DetailedUserManhwa) => void;
   onConfirmDelete: (manhwaId: number) => void;
+  manhwaName: string;
 }
 
 const statusLabels: Record<string, string> = {
@@ -21,7 +20,7 @@ const statusLabels: Record<string, string> = {
   COMPLETED: 'Completed',
 };
 
-const UserManhwaSection: React.FC<UserManhwaSectionProps> = ({ userStatus, statusFilter, refresh, onEdit, onConfirmDelete }) => {
+const UserManhwaSection: React.FC<UserManhwaSectionProps> = ({ userStatus, onEdit, onConfirmDelete, manhwaName }) => {
   const { token } = useAuth();
   const [manhwas, setManhwas] = useState<DetailedUserManhwa[]>([]);
   const [page, setPage] = useState(1);
@@ -38,7 +37,7 @@ const UserManhwaSection: React.FC<UserManhwaSectionProps> = ({ userStatus, statu
 
     setLoading(true);
     try {
-      const response = await getUserManhwas(token, page, pageSize, statusFilter === '' ? undefined : statusFilter as | 'COMPLETED' | 'ONGOING' | 'HIATUS', userStatus);
+      const response = await getUserManhwas(token, page, pageSize, undefined, userStatus, manhwaName);
       const total = response.data.total;
       setManhwas(response.data.userManhwas);
       setTotalManhwas(total);
@@ -53,11 +52,11 @@ const UserManhwaSection: React.FC<UserManhwaSectionProps> = ({ userStatus, statu
     } finally {
       setLoading(false);
     }
-  }, [token, page, pageSize, statusFilter, userStatus, hasFetchedOnce]);
+  }, [token, page, pageSize, userStatus, manhwaName]);
 
   useEffect(() => {
     fetchManhwas();
-  }, [fetchManhwas, refresh]);
+  }, [fetchManhwas]);
 
   const handlePageChange = (event: React.ChangeEvent<unknown>, value: number) => {
     setPage(value);
@@ -79,7 +78,7 @@ const UserManhwaSection: React.FC<UserManhwaSectionProps> = ({ userStatus, statu
           <>
             <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))', gap: 3 }}>
               {manhwas.map((manhwa) => (
-                <ManhwaCard key={manhwa.id} manhwa={manhwa} onUpdate={fetchManhwas} onEdit={onEdit} onConfirmDelete={onConfirmDelete} />
+                <ManhwaCard key={manhwa.id} manhwa={manhwa} onEdit={onEdit} onConfirmDelete={onConfirmDelete} />
               ))}
             </Box>
             {totalPages > 1 && (

@@ -1,6 +1,6 @@
 import api from './api';
 
-export const getUserManhwas = (token: string, page?: number, pageSize?: number, status?: 'ONGOING' | 'COMPLETED' | 'HIATUS', userStatus?: 'READING' | 'PAUSED' | 'DROPPED' | 'COMPLETED') => {
+export const getUserManhwas = (token: string, page?: number, pageSize?: number, status?: 'ONGOING' | 'COMPLETED' | 'HIATUS', userStatus?: 'READING' | 'PAUSED' | 'DROPPED' | 'COMPLETED', manhwaName?: string) => {
   return api.get('/user/manhwas', {
     headers: {
       Authorization: `Bearer ${token}`,
@@ -9,7 +9,8 @@ export const getUserManhwas = (token: string, page?: number, pageSize?: number, 
         page,
         pageSize,
         status,
-        userStatus
+        userStatus,
+        manhwaName
     }
   });
 };
