@@ -23,6 +23,7 @@ interface ManhwaDetails {
   description: string | null;
   genre: string | null;
   status: 'ONGOING' | 'COMPLETED' | 'HIATUS' | null;
+  alternativeNames?: string[];
 }
 
 const ManhwaManagement = () => {
@@ -44,6 +45,8 @@ const ManhwaManagement = () => {
   const [manhwaStatus, setManhwaStatus] = useState<'ONGOING' | 'COMPLETED' | 'HIATUS' | null>(null);
   const [manhwaGenres, setManhwaGenres] = useState<string[]>([]);
   const [newGenre, setNewGenre] = useState('');
+  const [manhwaAlternativeNames, setManhwaAlternativeNames] = useState<string[]>([]);
+  const [newAlternativeName, setNewAlternativeName] = useState('');
 
   const fetchManhwas = useCallback(async () => {
     if (token) {
@@ -76,6 +79,7 @@ const ManhwaManagement = () => {
     setManhwaDescription('');
     setManhwaStatus(null);
     setManhwaGenres([]);
+    setManhwaAlternativeNames([]);
     setOpenDialog(true);
   };
 
@@ -107,6 +111,12 @@ const ManhwaManagement = () => {
           setManhwaGenres([]);
         }
 
+        if (fullManhwaDetails.alternativeNames) {
+          setManhwaAlternativeNames(fullManhwaDetails.alternativeNames);
+        } else {
+          setManhwaAlternativeNames([]);
+        }
+
         setOpenDialog(true);
       } catch (error) {
         console.error('Failed to fetch manhwa details', error);
@@ -128,6 +138,7 @@ const ManhwaManagement = () => {
           description: manhwaDescription,
           status: manhwaStatus,
           genre: manhwaGenres,
+          alternativeNames: manhwaAlternativeNames,
         };
 
         if (currentManhwa) {
@@ -179,6 +190,17 @@ const ManhwaManagement = () => {
 
   const handleDeleteGenre = (genreToDelete: string) => {
     setManhwaGenres(manhwaGenres.filter((genre) => genre !== genreToDelete));
+  };
+
+  const handleAddAlternativeName = () => {
+    if (newAlternativeName && !manhwaAlternativeNames.includes(newAlternativeName)) {
+      setManhwaAlternativeNames([...manhwaAlternativeNames, newAlternativeName]);
+      setNewAlternativeName('');
+    }
+  };
+
+  const handleDeleteAlternativeName = (nameToDelete: string) => {
+    setManhwaAlternativeNames(manhwaAlternativeNames.filter((name) => name !== nameToDelete));
   };
 
   return (
@@ -293,6 +315,23 @@ const ManhwaManagement = () => {
                 size="small"
               />
               <Button onClick={handleAddGenre} size="small" sx={{ ml: 1 }}>Add</Button>
+            </Box>
+          </Box>
+          <Box sx={{ mt: 2 }}>
+            <Typography variant="subtitle1">Alternative Names</Typography>
+            <Stack direction="row" spacing={1} flexWrap="wrap" sx={{ mb: 1, gap: 1 }}>
+              {manhwaAlternativeNames.map((name) => (
+                <Chip key={name} label={name} onDelete={() => handleDeleteAlternativeName(name)} />
+              ))}
+            </Stack>
+            <Box sx={{ display: 'flex', alignItems: 'center' }}>
+              <TextField
+                label="Add Alternative Name"
+                value={newAlternativeName}
+                onChange={(e) => setNewAlternativeName(e.target.value)}
+                size="small"
+              />
+              <Button onClick={handleAddAlternativeName} size="small" sx={{ ml: 1 }}>Add</Button>
             </Box>
           </Box>
         </DialogContent>
