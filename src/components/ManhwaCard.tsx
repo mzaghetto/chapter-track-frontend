@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Card, CardMedia, CardContent, CardActions, Typography, IconButton, Switch, Box, Chip, Divider, Tooltip, Button } from '@mui/material';
 import { keyframes } from '@emotion/react';
 import EditIcon from '@mui/icons-material/Edit';
@@ -33,10 +33,16 @@ interface ManhwaCardProps {
 const ManhwaCard: React.FC<ManhwaCardProps> = ({ manhwa, onEdit, onConfirmDelete }) => {
   const { token } = useAuth();
 
+  const [localManhwa, setLocalManhwa] = useState(manhwa);
+
   const handleEpisodeChange = async (newEpisode: number) => {
     if (token) {
       try {
         await updateUserManhwa(token, manhwa.id, { lastEpisodeRead: newEpisode });
+        setLocalManhwa((prev: DetailedUserManhwa) => ({
+          ...prev,
+          lastEpisodeRead: newEpisode
+        }));
       } catch (error) {
         console.error('Failed to update last episode read', error);
       }
@@ -47,6 +53,10 @@ const ManhwaCard: React.FC<ManhwaCardProps> = ({ manhwa, onEdit, onConfirmDelete
     if (token) {
       try {
         await registerManhwaNotification(token, parseInt(manhwa.manhwaId), 'TELEGRAM', isEnabled);
+        setLocalManhwa((prev: DetailedUserManhwa) => ({
+          ...prev,
+          isTelegramNotificationEnabled: isEnabled
+        }));
       } catch (error) {
         console.error('Failed to update notification status', error);
       }
@@ -58,10 +68,10 @@ const ManhwaCard: React.FC<ManhwaCardProps> = ({ manhwa, onEdit, onConfirmDelete
       sx={{
         display: 'flex',
         flexDirection: 'column',
-        border: manhwa.lastEpisodeReleased && typeof manhwa.lastEpisodeRead === 'number' && manhwa.lastEpisodeReleased > manhwa.lastEpisodeRead
+        border: localManhwa.lastEpisodeReleased && typeof localManhwa.lastEpisodeRead === 'number' && localManhwa.lastEpisodeReleased > localManhwa.lastEpisodeRead
           ? '2px solid orange'
           : '1px solid rgba(0, 0, 0, 0.12)',
-        animation: manhwa.lastEpisodeReleased && typeof manhwa.lastEpisodeRead === 'number' && manhwa.lastEpisodeReleased > manhwa.lastEpisodeRead
+        animation: localManhwa.lastEpisodeReleased && typeof localManhwa.lastEpisodeRead === 'number' && localManhwa.lastEpisodeReleased > localManhwa.lastEpisodeRead
           ? `${pulse} 1.5s infinite`
           : 'none',
       }}
@@ -70,11 +80,11 @@ const ManhwaCard: React.FC<ManhwaCardProps> = ({ manhwa, onEdit, onConfirmDelete
         <CardMedia
           component="img"
           height="250"
-          image={manhwa.coverImage || 'https://via.placeholder.com/250'}
-          alt={manhwa.manhwaName}
+          image={localManhwa.coverImage || 'https://via.placeholder.com/250'}
+          alt={localManhwa.manhwaName}
         />
-        {manhwa.lastEpisodeReleased && typeof manhwa.lastEpisodeRead === 'number' && manhwa.lastEpisodeReleased > manhwa.lastEpisodeRead && (
-          <Tooltip title={`New Episode Available! (${manhwa.lastEpisodeReleased})`}>
+        {localManhwa.lastEpisodeReleased && typeof localManhwa.lastEpisodeRead === 'number' && localManhwa.lastEpisodeReleased > localManhwa.lastEpisodeRead && (
+          <Tooltip title={`New Episode Available! (${localManhwa.lastEpisodeReleased})`}>
             <InfoOutlinedIcon
               sx={{
                 position: 'absolute',
@@ -89,11 +99,11 @@ const ManhwaCard: React.FC<ManhwaCardProps> = ({ manhwa, onEdit, onConfirmDelete
       <CardContent sx={{ flexGrow: 1, p: 0 }}>
         <Box sx={{ pt: 2, px: 2, display: 'flex', alignItems: 'center' }}>
           <Box sx={{ mr: 1, flexGrow: 1, minHeight: '4em', display: 'flex', alignItems: 'center' }}>
-            <Typography variant="h6" component="div" title={manhwa.manhwaName} sx={{ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
-              {manhwa.manhwaName}
+            <Typography variant="h6" component="div" title={localManhwa.manhwaName} sx={{ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+              {localManhwa.manhwaName}
             </Typography>
           </Box>
-          <Chip label={manhwa.providerName} size="small" />
+          <Chip label={localManhwa.providerName} size="small" />
         </Box>
         <Box sx={{ py: 1 }}>
           <Divider />
@@ -104,8 +114,8 @@ const ManhwaCard: React.FC<ManhwaCardProps> = ({ manhwa, onEdit, onConfirmDelete
             <IconButton size="small" onClick={() => handleEpisodeChange((manhwa.lastEpisodeRead || 0) - 1)} disabled={(manhwa.lastEpisodeRead || 0) <= 0}>
               <RemoveIcon />
             </IconButton>
-            {manhwa.lastEpisodeRead}
-            <IconButton size="small" onClick={() => handleEpisodeChange((manhwa.lastEpisodeRead || 0) + 1)}>
+            {localManhwa.lastEpisodeRead}
+            <IconButton size="small" onClick={() => handleEpisodeChange((localManhwa.lastEpisodeRead || 0) + 1)}>
               <AddIcon />
             </IconButton>
           </Typography>
@@ -114,7 +124,7 @@ const ManhwaCard: React.FC<ManhwaCardProps> = ({ manhwa, onEdit, onConfirmDelete
       <CardActions sx={{ justifyContent: 'space-between' }}>
         <Box sx={{ display: 'flex', alignItems: 'center' }}>
           <Switch
-            checked={manhwa.isTelegramNotificationEnabled || false}
+            checked={localManhwa.isTelegramNotificationEnabled || false}
             onChange={(e) => handleNotificationChange(e.target.checked)}
           />
           <Typography variant="caption">Notifications</Typography>

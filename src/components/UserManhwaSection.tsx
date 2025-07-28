@@ -78,7 +78,12 @@ const UserManhwaSection: React.FC<UserManhwaSectionProps> = ({ userStatus, onEdi
           <>
             <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))', gap: 3 }}>
               {manhwas.map((manhwa) => (
-                <ManhwaCard key={manhwa.id} manhwa={manhwa} onEdit={onEdit} onConfirmDelete={onConfirmDelete} />
+                <ManhwaCard
+                  key={manhwa.id}
+                  manhwa={manhwa}
+                  onEdit={onEdit}
+                  onConfirmDelete={onConfirmDelete}
+                />
               ))}
             </Box>
             {totalPages > 1 && (

@@ -26,7 +26,7 @@ const DashboardPage = () => {
     setManhwaListKey(prev => prev + 1);
   };
 
-    const handleOpenModal = (manhwa: DetailedUserManhwa) => {
+  const handleOpenModal = (manhwa: DetailedUserManhwa) => {
     setSelectedManhwa(manhwa);
     setModalOpen(true);
   };
@@ -87,10 +87,34 @@ const DashboardPage = () => {
             Add New Manhwa
           </Button>
         </Box>
-        <UserManhwaSection key={`${manhwaListKey}-reading`} userStatus="READING" manhwaName={displayedManhwaName} onEdit={handleOpenModal} onConfirmDelete={handleOpenConfirmDialog} />
-        <UserManhwaSection key={`${manhwaListKey}-paused`} userStatus="PAUSED" manhwaName={displayedManhwaName} onEdit={handleOpenModal} onConfirmDelete={handleOpenConfirmDialog} />
-        <UserManhwaSection key={`${manhwaListKey}-dropped`} userStatus="DROPPED" manhwaName={displayedManhwaName} onEdit={handleOpenModal} onConfirmDelete={handleOpenConfirmDialog} />
-        <UserManhwaSection key={`${manhwaListKey}-completed`} userStatus="COMPLETED" manhwaName={displayedManhwaName} onEdit={handleOpenModal} onConfirmDelete={handleOpenConfirmDialog} />
+        <UserManhwaSection
+          key={`${manhwaListKey}-reading`}
+          userStatus="READING"
+          manhwaName={displayedManhwaName}
+          onEdit={handleOpenModal}
+          onConfirmDelete={handleOpenConfirmDialog}
+        />
+        <UserManhwaSection
+          key={`${manhwaListKey}-paused`}
+          userStatus="PAUSED"
+          manhwaName={displayedManhwaName}
+          onEdit={handleOpenModal}
+          onConfirmDelete={handleOpenConfirmDialog}
+        />
+        <UserManhwaSection
+          key={`${manhwaListKey}-dropped`}
+          userStatus="DROPPED"
+          manhwaName={displayedManhwaName}
+          onEdit={handleOpenModal}
+          onConfirmDelete={handleOpenConfirmDialog}
+        />
+        <UserManhwaSection
+          key={`${manhwaListKey}-completed`}
+          userStatus="COMPLETED"
+          manhwaName={displayedManhwaName}
+          onEdit={handleOpenModal}
+          onConfirmDelete={handleOpenConfirmDialog}
+        />
       </Container>
       <UpdateManhwaModal
         open={isModalOpen}
