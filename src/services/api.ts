@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { getNavigate } from '../utils/navigation';
+import { logout } from './authService';
 
 const api = axios.create({
   baseURL: process.env.REACT_APP_API_URL,
@@ -48,16 +48,12 @@ api.interceptors.response.use(
             const newToken = res.data.token;
             localStorage.setItem('token', newToken);
             api.defaults.headers.common['Authorization'] = `Bearer ${newToken}`;
+            error.config.headers['Authorization'] = `Bearer ${newToken}`;
             processQueue(null, newToken);
-            originalRequest.headers['Authorization'] = `Bearer ${newToken}`;
-            resolve(api(originalRequest));
+            resolve(api(error.config));
           })
           .catch(err => {
-            localStorage.removeItem('token');
-            const navigate = getNavigate();
-            if (navigate) {
-              navigate('/login');
-            }
+            logout();
             processQueue(err, null);
             reject(err);
           })

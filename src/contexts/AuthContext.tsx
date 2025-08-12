@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { getProfile } from '../services/auth';
+import { logout as logoutService } from '../services/authService';
 
 interface User {
   id: string;
@@ -63,7 +64,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   const logout = () => {
-    localStorage.removeItem('token');
+    logoutService();
     setUser(null);
     setToken(null);
   };
