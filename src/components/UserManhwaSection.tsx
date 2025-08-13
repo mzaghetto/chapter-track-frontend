@@ -23,6 +23,7 @@ const statusLabels: Record<string, string> = {
 const UserManhwaSection: React.FC<UserManhwaSectionProps> = ({ userStatus, onEdit, onConfirmDelete, manhwaName }) => {
   const { token } = useAuth();
   const [manhwas, setManhwas] = useState<DetailedUserManhwa[]>([]);
+  const accordionDetailsRef = useRef<HTMLDivElement>(null);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
   const [totalManhwas, setTotalManhwas] = useState(0);
@@ -58,6 +59,12 @@ const UserManhwaSection: React.FC<UserManhwaSectionProps> = ({ userStatus, onEdi
     fetchManhwas();
   }, [fetchManhwas]);
 
+  useEffect(() => {
+    if (accordionDetailsRef.current && isExpanded) {
+      accordionDetailsRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }, [page, isExpanded]);
+
   const handlePageChange = (event: React.ChangeEvent<unknown>, value: number) => {
     setPage(value);
   };
@@ -71,7 +78,7 @@ const UserManhwaSection: React.FC<UserManhwaSectionProps> = ({ userStatus, onEdi
       <AccordionSummary expandIcon={<ExpandMoreIcon />}>
         <Typography variant="h6">{statusLabels[userStatus]} ({totalManhwas})</Typography>
       </AccordionSummary>
-      <AccordionDetails>
+      <AccordionDetails ref={accordionDetailsRef}>
         {loading && !hasFetchedOnce.current ? (
           <CircularProgress />
         ) : (
