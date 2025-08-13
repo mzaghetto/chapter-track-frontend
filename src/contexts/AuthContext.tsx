@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { getProfile } from '../services/auth';
 import { logout as logoutService } from '../services/authService';
+import api from '../services/api';
 
 interface User {
   id: string;
@@ -61,12 +62,14 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const login = (newToken: string) => {
     localStorage.setItem('token', newToken);
     setToken(newToken);
+    api.defaults.headers.common['Authorization'] = `Bearer ${newToken}`;
   };
 
   const logout = () => {
     logoutService();
     setUser(null);
     setToken(null);
+    delete api.defaults.headers.common['Authorization'];
   };
 
   return (

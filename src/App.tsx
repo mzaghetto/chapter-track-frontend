@@ -10,10 +10,13 @@ import AdminPage from './pages/AdminPage';
 import HomePage from './pages/HomePage';
 import AddManhwaPage from './pages/AddManhwaPage';
 import NavigationSetter from './components/NavigationSetter';
+import NotFoundPage from './pages/NotFoundPage';
+import AuthInitializer from './components/AuthInitializer';
 
 function App() {
   return (
     <AuthProvider>
+      <AuthInitializer />
       <Router>
         <NavigationSetter /> {/* Render the NavigationSetter here */}
         <Routes>
@@ -52,6 +55,7 @@ function App() {
               </PrivateRoute>
             }
           />
+          <Route path="*" element={<NotFoundPage />} />
         </Routes>
       </Router>
     </AuthProvider>

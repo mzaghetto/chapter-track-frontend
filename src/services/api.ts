@@ -9,6 +9,12 @@ const api = axios.create({
 let isRefreshing = false;
 let failedQueue: any[] = [];
 
+let onTokenRefreshedCallback: ((token: string) => void) | null = null;
+
+export const setOnTokenRefreshedCallback = (callback: (token: string) => void) => {
+  onTokenRefreshedCallback = callback;
+};
+
 const processQueue = (error: any, token: string | null = null) => {
   failedQueue.forEach(promise => {
     if (error) {
@@ -49,6 +55,9 @@ api.interceptors.response.use(
             localStorage.setItem('token', newToken);
             api.defaults.headers.common['Authorization'] = `Bearer ${newToken}`;
             error.config.headers['Authorization'] = `Bearer ${newToken}`;
+            if (onTokenRefreshedCallback) {
+              onTokenRefreshedCallback(newToken);
+            }
             processQueue(null, newToken);
             resolve(api(error.config));
           })
