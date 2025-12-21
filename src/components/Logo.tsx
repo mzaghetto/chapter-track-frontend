@@ -1,58 +1,113 @@
 import React from 'react';
+import { Box, Typography } from '@mui/material';
+import { useNavigate } from 'react-router-dom';
+import { AutoStories } from '@mui/icons-material';
 
 interface LogoProps {
   height?: string;
+  onClick?: () => void;
+  color?: 'white' | 'dark';
+  size?: 'small' | 'medium' | 'large';
 }
 
-const Logo: React.FC<LogoProps> = ({ height = '90px' }) => {
+const Logo: React.FC<LogoProps> = ({
+  height = 'auto',
+  onClick,
+  color = 'dark',
+  size = 'medium'
+}) => {
+  const navigate = useNavigate();
+
+  // Size configurations
+  const sizeConfig = {
+    small: {
+      iconSize: 24,
+      fontSize: '1rem',
+      iconBoxSize: 24,
+      spacing: 0.5,
+    },
+    medium: {
+      iconSize: 20,
+      fontSize: '1.25rem',
+      iconBoxSize: 32,
+      spacing: 1,
+    },
+    large: {
+      iconSize: 28,
+      fontSize: '1.5rem',
+      iconBoxSize: 40,
+      spacing: 1.5,
+    }
+  };
+
+  const config = sizeConfig[size];
+  const isWhite = color === 'white';
+
+  const handleLogoClick = () => {
+    if (onClick) {
+      onClick();
+    } else {
+      navigate('/');
+    }
+  };
+
   return (
-    <svg viewBox="0 0 200 80" xmlns="http://www.w3.org/2000/svg" style={{ height: height, width: 'auto' }}>
-      <defs>
-        <linearGradient id="bookGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" style={{ stopColor: '#4f46e5', stopOpacity: 1 }} />
-          <stop offset="100%" style={{ stopColor: '#7c3aed', stopOpacity: 1 }} />
-        </linearGradient>
-        <linearGradient id="textGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-          <stop offset="0%" style={{ stopColor: '#1f2937', stopOpacity: 1 }} />
-          <stop offset="100%" style={{ stopColor: '#4b5563', stopOpacity: 1 }} />
-        </linearGradient>
-      </defs>
-      
-      <g transform="translate(10, 25)">
-        <rect x="0" y="25" width="35" height="8" rx="2" fill="#e5e7eb" stroke="#d1d5db" strokeWidth="1"/>
-        <rect x="2" y="15" width="35" height="8" rx="2" fill="#f3f4f6" stroke="#d1d5db" strokeWidth="1"/>
-        <rect x="4" y="5" width="35" height="8" rx="2" fill="url(#bookGradient)" stroke="#6366f1" strokeWidth="1"/>
-        
-        <line x1="8" y1="7" x2="8" y2="11" stroke="#ffffff" strokeWidth="1" opacity="0.7"/>
-        <line x1="35" y1="7" x2="35" y2="11" stroke="#ffffff" strokeWidth="1" opacity="0.7"/>
-        
-        <g>
-          <rect x="19" y="3" width="6" height="12" fill="#ef4444"/>
-          <polygon points="19,15 25,15 22,18" fill="#ef4444"/>
-        </g>
-      </g>
-      
-      <g transform="translate(45, 30)">
-        <circle cx="15" cy="15" r="12" fill="none" stroke="#e5e7eb" strokeWidth="3"/>
-        <circle cx="15" cy="15" r="12" fill="none" stroke="url(#bookGradient)" strokeWidth="3" 
-                strokeDasharray="28.27" strokeDashoffset="7" strokeLinecap="round" 
-                transform="rotate(-90 15 15)"/>
-        
-        <path d="M10 15 L13 18 L20 11" stroke="#4f46e5" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round"/>
-      </g>
-      
-      <g transform="translate(85, 25)">
-        <text x="0" y="18" fontFamily="'Trebuchet MS', 'Lucida Sans Unicode', sans-serif" fontSize="18" fontWeight="700" fill="url(#textGradient)" letterSpacing="1px">
-          CHAPTER
-        </text>
-        
-        <text x="0" y="38" fontFamily="'Trebuchet MS', 'Lucida Sans Unicode', sans-serif" fontSize="18" fontWeight="700" fill="url(#textGradient)" letterSpacing="1px">
-          TRACK
-        </text>
-        
-        <line x1="0" y1="25" x2="65" y2="25" stroke="url(#bookGradient)" strokeWidth="1" opacity="0.5"/>
-      </g>
-    </svg>
+    <Box
+      sx={{
+        display: 'flex',
+        alignItems: 'center',
+        cursor: 'pointer',
+        gap: config.spacing,
+        '&:hover .logo-icon': {
+          bgcolor: isWhite
+            ? 'rgba(29, 78, 216, 0.8)'
+            : 'rgba(255, 255, 255, 0.3)',
+        }
+      }}
+      onClick={handleLogoClick}
+    >
+      <Box
+        className="logo-icon"
+        sx={{
+          position: 'relative',
+          width: config.iconBoxSize,
+          height: config.iconBoxSize,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          bgcolor: isWhite
+            ? 'rgba(255, 255, 255, 0.2)'
+            : 'transparent',
+          borderRadius: '8px',
+          transition: 'all 0.2s ease-in-out',
+        }}
+      >
+        <AutoStories
+          sx={{
+            fontSize: config.iconSize,
+            color: isWhite ? 'white' : 'text.primary',
+          }}
+        />
+      </Box>
+
+      <Typography
+        variant="h6"
+        component="span"
+        sx={{
+          fontWeight: 700, // font-bold
+          fontSize: config.fontSize,
+          color: isWhite ? 'white' : 'text.primary',
+          letterSpacing: '-0.025em', // tracking-tight equivalent
+          fontFamily: 'Inter, system-ui, sans-serif',
+          lineHeight: 1.2,
+        }}
+      >
+        Chapter
+        <Box component="span" sx={{ fontWeight: 400, opacity: 0.9 }}>
+          Track
+        </Box>
+      </Typography>
+    </Box>
   );
 };
 

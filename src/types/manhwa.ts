@@ -7,7 +7,7 @@ export interface Manhwa {
   status: string;
   source: string;
   source_id: string;
-  genres: string[];
+  genre: string[];
   alternativeNames?: string[];
 }
 

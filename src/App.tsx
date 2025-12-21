@@ -1,6 +1,7 @@
 import React from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
+import { ThemeProvider } from './contexts/ThemeContext';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import DashboardPage from './pages/DashboardPage';
@@ -15,9 +16,10 @@ import AuthInitializer from './components/AuthInitializer';
 
 function App() {
   return (
-    <AuthProvider>
-      <AuthInitializer />
-      <Router>
+    <ThemeProvider>
+      <AuthProvider>
+        <AuthInitializer />
+        <Router>
         <NavigationSetter /> {/* Render the NavigationSetter here */}
         <Routes>
           <Route path="/" element={<HomePage />} />
@@ -58,7 +60,8 @@ function App() {
           <Route path="*" element={<NotFoundPage />} />
         </Routes>
       </Router>
-    </AuthProvider>
+      </AuthProvider>
+    </ThemeProvider>
   );
 }
 
