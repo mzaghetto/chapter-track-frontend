@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { login, googleSSO } from '../services/auth';
-import { Button, TextField, Container, Typography, Box, AppBar, Toolbar, Snackbar, Alert, IconButton, useTheme } from '@mui/material';
+import { Button, TextField, Container, Typography, Box, AppBar, Toolbar, Snackbar, Alert, IconButton, useTheme, Drawer, List, ListItem, ListItemButton, ListItemText } from '@mui/material';
 import { keyframes } from '@emotion/react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { GoogleOAuthProvider, GoogleLogin } from '@react-oauth/google';
-import { DarkMode, LightMode, Email, Lock, Login } from '@mui/icons-material';
+import { DarkMode, LightMode, Email, Lock, Login as LoginIcon, Menu } from '@mui/icons-material';
 import Logo from '../components/Logo';
 import { useThemeMode } from '../contexts/ThemeContext';
 
@@ -44,16 +44,34 @@ const LoginPage = () => {
   const [snackbarMessage, setSnackbarMessage] = useState('');
   const [snackbarSeverity, setSnackbarSeverity] = useState<'error' | 'warning' | 'success' | 'info'>('error');
   const [shakeButton, setShakeButton] = useState(false);
+  const [fromRegister, setFromRegister] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
   const { mode, toggleTheme } = useThemeMode();
   const theme = useTheme();
 
-  
+  const handleMobileMenuOpen = () => setMobileMenuOpen(true);
+  const handleMobileMenuClose = () => setMobileMenuOpen(false);
+
+
   useEffect(() => {
     if (isAuthenticated) {
       navigate('/dashboard');
     }
   }, [isAuthenticated, navigate]);
+
+  useEffect(() => {
+    // Check if user came from registration
+    if (location.state?.fromRegister) {
+      setFromRegister(true);
+      setSnackbarMessage('Registration successful! Please use your email and password to sign in.');
+      setSnackbarSeverity('success');
+      setOpenSnackbar(true);
+      // Clear the state to avoid showing message again on refresh
+      navigate(location.pathname, { replace: true, state: {} });
+    }
+  }, [location.state, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -131,6 +149,21 @@ const LoginPage = () => {
 
             {/* Navigation buttons */}
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+              {/* Mobile menu icon - only visible on mobile */}
+              <IconButton
+                edge="end"
+                onClick={handleMobileMenuOpen}
+                sx={{
+                  color: 'white',
+                  display: { xs: 'flex', sm: 'none' },
+                  '&:hover': {
+                    bgcolor: 'rgba(255, 255, 255, 0.1)',
+                  },
+                }}
+              >
+                <Menu />
+              </IconButton>
+
               <Button
                 onClick={() => navigate('/')}
                 sx={{
@@ -167,6 +200,7 @@ const LoginPage = () => {
                   fontFamily: 'Inter, system-ui, sans-serif',
                   minWidth: 'auto',
                   boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)',
+                  display: { xs: 'none', sm: 'block' },
                   '&:hover': {
                     bgcolor: '#f1f5f9',
                     transform: 'scale(1.05)',
@@ -196,6 +230,100 @@ const LoginPage = () => {
                 {mode === 'dark' ? <LightMode /> : <DarkMode />}
               </IconButton>
             </Box>
+
+            {/* Mobile Drawer */}
+            <Drawer
+              anchor="right"
+              open={mobileMenuOpen}
+              onClose={handleMobileMenuClose}
+              sx={{
+                display: { xs: 'block', sm: 'none' },
+                '& .MuiDrawer-paper': {
+                  width: 280,
+                  bgcolor: theme.palette.mode === 'dark' ? '#1e293b' : 'white',
+                },
+              }}
+            >
+              <Box sx={{ p: 2 }}>
+                <List>
+                  <ListItem disablePadding sx={{ mb: 1 }}>
+                    <ListItemButton
+                      onClick={() => {
+                        navigate('/');
+                        handleMobileMenuClose();
+                      }}
+                      sx={{
+                        borderRadius: 1,
+                        '&:hover': {
+                          bgcolor: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.04)',
+                        },
+                      }}
+                    >
+                      <ListItemText
+                        primary="Home"
+                        sx={{
+                          '& .MuiTypography-root': {
+                            fontFamily: 'Inter, system-ui, sans-serif',
+                            fontWeight: 500,
+                            color: theme.palette.mode === 'dark' ? 'white' : 'text.primary',
+                          },
+                        }}
+                      />
+                    </ListItemButton>
+                  </ListItem>
+                  <ListItem disablePadding sx={{ mb: 1 }}>
+                    <ListItemButton
+                      onClick={() => {
+                        navigate('/register');
+                        handleMobileMenuClose();
+                      }}
+                      sx={{
+                        borderRadius: 1,
+                        '&:hover': {
+                          bgcolor: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.04)',
+                        },
+                      }}
+                    >
+                      <ListItemText
+                        primary="Register"
+                        sx={{
+                          '& .MuiTypography-root': {
+                            fontFamily: 'Inter, system-ui, sans-serif',
+                            fontWeight: 500,
+                            color: theme.palette.mode === 'dark' ? 'white' : 'text.primary',
+                          },
+                        }}
+                      />
+                    </ListItemButton>
+                  </ListItem>
+                  <ListItem disablePadding>
+                    <ListItemButton
+                      onClick={() => {
+                        toggleTheme();
+                        handleMobileMenuClose();
+                      }}
+                      sx={{
+                        borderRadius: 1,
+                        '&:hover': {
+                          bgcolor: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.04)',
+                        },
+                      }}
+                    >
+                      <ListItemText
+                        primary={mode === 'dark' ? 'Light Mode' : 'Dark Mode'}
+                        sx={{
+                          '& .MuiTypography-root': {
+                            fontFamily: 'Inter, system-ui, sans-serif',
+                            fontWeight: 500,
+                            color: theme.palette.mode === 'dark' ? 'white' : 'text.primary',
+                          },
+                        }}
+                      />
+                    </ListItemButton>
+                  </ListItem>
+                </List>
+              </Box>
+            </Drawer>
           </Toolbar>
         </Container>
       </AppBar>
@@ -312,6 +440,55 @@ const LoginPage = () => {
                   >
                     Sign in to continue tracking your reading journey
                   </Typography>
+
+                  {/* Success message from registration */}
+                  {fromRegister && (
+                    <Box
+                      sx={{
+                        mt: 2,
+                        p: 1.5,
+                        borderRadius: '0.5rem',
+                        bgcolor: theme.palette.mode === 'dark' ? 'rgba(34, 197, 94, 0.1)' : '#dcfce7',
+                        border: '1px solid #22c55e',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 1,
+                      }}
+                    >
+                      <Box
+                        sx={{
+                          width: 20,
+                          height: 20,
+                          borderRadius: '50%',
+                          bgcolor: '#22c55e',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          flexShrink: 0,
+                        }}
+                      >
+                        <Typography
+                          sx={{
+                            color: 'white',
+                            fontSize: '0.75rem',
+                            fontWeight: 'bold',
+                            lineHeight: 1,
+                          }}
+                        >
+                          ✓
+                        </Typography>
+                      </Box>
+                      <Typography
+                        sx={{
+                          fontSize: '0.875rem',
+                          color: theme.palette.mode === 'dark' ? '#86efac' : '#166534',
+                          textAlign: 'left',
+                        }}
+                      >
+                        Account created! Use your credentials to sign in.
+                      </Typography>
+                    </Box>
+                  )}
                 </Box>
 
                 {/* Form Fields */}
@@ -537,7 +714,7 @@ const LoginPage = () => {
                         pl: 1, // Aumentado para 16px de espaçamento na esquerda
                       }}
                     >
-                        <Login
+                        <LoginIcon
                           sx={{
                             width: '1.5rem', // 24px
                             height: '1.5rem', // 24px
@@ -655,8 +832,24 @@ const LoginPage = () => {
           </Box>
         </Container>
       </Box>
-      <Snackbar open={openSnackbar} autoHideDuration={6000} onClose={handleCloseSnackbar} anchorOrigin={{ vertical: 'top', horizontal: 'center' }}>
-        <Alert onClose={handleCloseSnackbar} severity={snackbarSeverity} sx={{ width: '100%' }}>
+      <Snackbar
+        open={openSnackbar}
+        autoHideDuration={6000}
+        onClose={handleCloseSnackbar}
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+        sx={{
+          top: '80px',
+        }}
+      >
+        <Alert
+          onClose={handleCloseSnackbar}
+          severity={snackbarSeverity}
+          variant="filled"
+          sx={{
+            minWidth: '300px',
+            fontFamily: 'Inter, system-ui, sans-serif',
+          }}
+        >
           {snackbarMessage}
         </Alert>
       </Snackbar>
