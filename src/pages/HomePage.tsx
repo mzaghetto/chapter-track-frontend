@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   AppBar,
   Toolbar,
@@ -11,6 +11,11 @@ import {
   Paper,
   Chip,
   IconButton,
+  Drawer,
+  List,
+  ListItem,
+  ListItemButton,
+  ListItemText,
   useTheme
 } from '@mui/material';
 import { useThemeMode } from '../contexts/ThemeContext';
@@ -21,7 +26,8 @@ import {
   ArrowForward,
   DarkMode,
   LightMode,
-  AutoStories
+  AutoStories,
+  Menu
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import Logo from '../components/Logo';
@@ -31,6 +37,10 @@ const HomePage = () => {
   const navigate = useNavigate();
   const { mode, toggleTheme } = useThemeMode();
   const theme = useTheme();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  const handleMobileMenuOpen = () => setMobileMenuOpen(true);
+  const handleMobileMenuClose = () => setMobileMenuOpen(false);
 
   const features = [
     {
@@ -79,6 +89,21 @@ const HomePage = () => {
 
             {/* Navigation buttons */}
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+              {/* Mobile menu icon - only visible on mobile */}
+              <IconButton
+                edge="end"
+                onClick={handleMobileMenuOpen}
+                sx={{
+                  color: 'white',
+                  display: { xs: 'flex', sm: 'none' },
+                  '&:hover': {
+                    bgcolor: 'rgba(255, 255, 255, 0.1)',
+                  },
+                }}
+              >
+                <Menu />
+              </IconButton>
+
               <Button
                 onClick={() => navigate('/login')}
                 sx={{
@@ -115,6 +140,7 @@ const HomePage = () => {
                   fontFamily: 'Inter, system-ui, sans-serif',
                   minWidth: 'auto',
                   boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)', // shadow-sm
+                  display: { xs: 'none', sm: 'block' },
                   '&:hover': {
                     bgcolor: '#f1f5f9', // hover:bg-slate-100
                     transform: 'scale(1.05)', // hover:scale-105
@@ -144,6 +170,100 @@ const HomePage = () => {
                 {mode === 'dark' ? <LightMode /> : <DarkMode />}
               </IconButton>
             </Box>
+
+            {/* Mobile Drawer */}
+            <Drawer
+              anchor="right"
+              open={mobileMenuOpen}
+              onClose={handleMobileMenuClose}
+              sx={{
+                display: { xs: 'block', sm: 'none' },
+                '& .MuiDrawer-paper': {
+                  width: 280,
+                  bgcolor: theme.palette.mode === 'dark' ? '#1e293b' : 'white',
+                },
+              }}
+            >
+              <Box sx={{ p: 2 }}>
+                <List>
+                  <ListItem disablePadding sx={{ mb: 1 }}>
+                    <ListItemButton
+                      onClick={() => {
+                        navigate('/login');
+                        handleMobileMenuClose();
+                      }}
+                      sx={{
+                        borderRadius: 1,
+                        '&:hover': {
+                          bgcolor: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.04)',
+                        },
+                      }}
+                    >
+                      <ListItemText
+                        primary="Login"
+                        sx={{
+                          '& .MuiTypography-root': {
+                            fontFamily: 'Inter, system-ui, sans-serif',
+                            fontWeight: 500,
+                            color: theme.palette.mode === 'dark' ? 'white' : 'text.primary',
+                          },
+                        }}
+                      />
+                    </ListItemButton>
+                  </ListItem>
+                  <ListItem disablePadding sx={{ mb: 1 }}>
+                    <ListItemButton
+                      onClick={() => {
+                        navigate('/register');
+                        handleMobileMenuClose();
+                      }}
+                      sx={{
+                        borderRadius: 1,
+                        '&:hover': {
+                          bgcolor: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.04)',
+                        },
+                      }}
+                    >
+                      <ListItemText
+                        primary="Register"
+                        sx={{
+                          '& .MuiTypography-root': {
+                            fontFamily: 'Inter, system-ui, sans-serif',
+                            fontWeight: 500,
+                            color: theme.palette.mode === 'dark' ? 'white' : 'text.primary',
+                          },
+                        }}
+                      />
+                    </ListItemButton>
+                  </ListItem>
+                  <ListItem disablePadding>
+                    <ListItemButton
+                      onClick={() => {
+                        toggleTheme();
+                        handleMobileMenuClose();
+                      }}
+                      sx={{
+                        borderRadius: 1,
+                        '&:hover': {
+                          bgcolor: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.04)',
+                        },
+                      }}
+                    >
+                      <ListItemText
+                        primary={mode === 'dark' ? 'Light Mode' : 'Dark Mode'}
+                        sx={{
+                          '& .MuiTypography-root': {
+                            fontFamily: 'Inter, system-ui, sans-serif',
+                            fontWeight: 500,
+                            color: theme.palette.mode === 'dark' ? 'white' : 'text.primary',
+                          },
+                        }}
+                      />
+                    </ListItemButton>
+                  </ListItem>
+                </List>
+              </Box>
+            </Drawer>
           </Toolbar>
         </Container>
       </AppBar>
@@ -375,7 +495,7 @@ const HomePage = () => {
             </Typography>
           </Box>
 
-          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(3, 1fr)' }, gap: 2, maxWidth: '100%', mx: 'auto' }}>
+          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(3, 1fr)' }, gap: { xs: 6, md: 2 }, maxWidth: '100%', mx: 'auto' }}>
             {features.map((feature, index) => (
               <Card
                 key={index}
@@ -390,7 +510,7 @@ const HomePage = () => {
                   bgcolor: theme.palette.mode === 'dark' ? '#1e293b' : '#f8fafc', // dark:bg-slate-800 / bg-slate-50
                   transition: 'all 0.3s ease-in-out',
                   '&:hover': {
-                    transform: 'translateY(-8px)',
+                    transform: { xs: 'none', md: 'translateY(-8px)' },
                     boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)', // hover:shadow-xl
                     '& .icon-container': {
                       transform: 'scale(1.1)',
@@ -469,7 +589,8 @@ const HomePage = () => {
       {/* Discovery Section */}
       <Box
         sx={{
-          py: '5rem', // padding-top e bottom: 5rem = 80px
+          pt: { xs: '3rem', md: '5rem' }, // padding-top: mobile 3rem, desktop 5rem
+          pb: { xs: '2rem', md: '5rem' }, // padding-bottom: mobile 2rem, desktop 5rem
           bgcolor: theme.palette.mode === 'dark'
             ? '#0f172a'  // background-dark = slate-900 (mesmo do body)
             : '#f8fafc', // background-light = slate-50 (mesmo do body)
