@@ -1,35 +1,44 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { Accordion, AccordionSummary, AccordionDetails, Box, Typography, Pagination, CircularProgress } from '@mui/material';
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import React, { useState, useEffect, useCallback } from 'react';
+import { Box, CircularProgress, IconButton, useTheme } from '@mui/material';
+import { ChevronLeft, ChevronRight } from '@mui/icons-material';
 import { DetailedUserManhwa } from '../types/manhwa';
 import { getUserManhwas } from '../services/manhwa';
 import { useAuth } from '../contexts/AuthContext';
 import ManhwaCard from './ManhwaCard';
+import StatusSection from './StatusSection';
 
 interface UserManhwaSectionProps {
   userStatus: 'READING' | 'PAUSED' | 'DROPPED' | 'COMPLETED';
   onEdit: (manhwa: DetailedUserManhwa) => void;
   onConfirmDelete: (manhwaId: number) => void;
   manhwaName: string;
+  onChapterUpdated?: () => void;
 }
 
-const statusLabels: Record<string, string> = {
-  READING: 'Currently Reading',
-  PAUSED: 'On Pause',
-  DROPPED: 'Dropped',
-  COMPLETED: 'Completed',
+const statusConfig: Record<
+  string,
+  { title: string; color: string; defaultExpanded: boolean }
+> = {
+  READING: { title: 'Currently Reading', color: '#2563EB', defaultExpanded: true },
+  PAUSED: { title: 'On Pause', color: '#EAB308', defaultExpanded: false },
+  DROPPED: { title: 'Dropped', color: '#EF4444', defaultExpanded: false },
+  COMPLETED: { title: 'Completed', color: '#10B981', defaultExpanded: false },
 };
 
-const UserManhwaSection: React.FC<UserManhwaSectionProps> = ({ userStatus, onEdit, onConfirmDelete, manhwaName }) => {
+const UserManhwaSection: React.FC<UserManhwaSectionProps> = ({
+  userStatus,
+  onEdit,
+  onConfirmDelete,
+  manhwaName,
+  onChapterUpdated,
+}) => {
   const { token } = useAuth();
+  const theme = useTheme();
   const [manhwas, setManhwas] = useState<DetailedUserManhwa[]>([]);
-  const accordionDetailsRef = useRef<HTMLDivElement>(null);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
   const [totalManhwas, setTotalManhwas] = useState(0);
   const [loading, setLoading] = useState(true);
-  const [isExpanded, setIsExpanded] = useState(false);
-  const hasFetchedOnce = useRef(false);
 
   const pageSize = parseInt(process.env.REACT_APP_MANHWAS_PER_PAGE || '8');
 
@@ -43,11 +52,6 @@ const UserManhwaSection: React.FC<UserManhwaSectionProps> = ({ userStatus, onEdi
       setManhwas(response.data.userManhwas);
       setTotalManhwas(total);
       setTotalPages(Math.ceil(total / pageSize));
-
-      if (!hasFetchedOnce.current) {
-        setIsExpanded(total > 0);
-        hasFetchedOnce.current = true;
-      }
     } catch (error) {
       console.error(`Failed to fetch ${userStatus} manhwas`, error);
     } finally {
@@ -59,49 +63,139 @@ const UserManhwaSection: React.FC<UserManhwaSectionProps> = ({ userStatus, onEdi
     fetchManhwas();
   }, [fetchManhwas]);
 
-  useEffect(() => {
-    if (accordionDetailsRef.current && isExpanded) {
-      accordionDetailsRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
-  }, [page, isExpanded]);
-
-  const handlePageChange = (event: React.ChangeEvent<unknown>, value: number) => {
+  const handlePageChange = (event: React.ChangeEvent<unknown> | null, value: number) => {
     setPage(value);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const handleAccordionChange = (event: React.SyntheticEvent, newExpanded: boolean) => {
-    setIsExpanded(newExpanded);
-  };
+  const config = statusConfig[userStatus];
 
   return (
-    <Accordion expanded={isExpanded} onChange={handleAccordionChange} sx={{ mb: 2 }}>
-      <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-        <Typography variant="h6">{statusLabels[userStatus]} ({totalManhwas})</Typography>
-      </AccordionSummary>
-      <AccordionDetails ref={accordionDetailsRef}>
-        {loading && !hasFetchedOnce.current ? (
+    <StatusSection
+      title={config.title}
+      count={totalManhwas}
+      color={config.color}
+      defaultExpanded={config.defaultExpanded}
+    >
+      {loading ? (
+        <Box
+          sx={{
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            py: 4,
+          }}
+        >
           <CircularProgress />
-        ) : (
-          <>
-            <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))', gap: 3 }}>
-              {manhwas.map((manhwa) => (
-                <ManhwaCard
-                  key={manhwa.id}
-                  manhwa={manhwa}
-                  onEdit={onEdit}
-                  onConfirmDelete={onConfirmDelete}
-                />
-              ))}
+        </Box>
+      ) : manhwas.length === 0 ? (
+        <Box
+          sx={{
+            textAlign: 'center',
+            py: 4,
+            color: 'text.secondary',
+          }}
+        >
+          No manhwas found in this category.
+        </Box>
+      ) : (
+        <>
+          {manhwas.map((manhwa) => (
+            <ManhwaCard
+              key={manhwa.id}
+              manhwa={manhwa}
+              onEdit={onEdit}
+              onConfirmDelete={onConfirmDelete}
+              onChapterUpdated={onChapterUpdated}
+            />
+          ))}
+
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <Box
+              sx={{
+                display: 'flex',
+                justifyContent: 'center',
+                mt: 2,
+                gridColumn: '1 / -1',
+                gap: '0.5rem',
+              }}
+            >
+              <IconButton
+                onClick={() => handlePageChange(null, page - 1)}
+                disabled={page === 1}
+                sx={{
+                  border: '1px solid',
+                  borderColor: 'divider',
+                  borderRadius: 1,
+                  width: '2rem',
+                  height: '2rem',
+                  p: 0,
+                  color: '#6B7280',
+                  '&:hover': {
+                    bgcolor: theme.palette.mode === 'dark' ? '#1F2937' : '#F3F4F6',
+                  },
+                  '&.Mui-disabled': {
+                    color: '#D1D5DB',
+                  },
+                }}
+              >
+                <ChevronLeft sx={{ fontSize: '0.875rem' }} />
+              </IconButton>
+
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map(
+                (pageNum) => (
+                  <IconButton
+                    key={pageNum}
+                    onClick={(e) => handlePageChange(e, pageNum)}
+                    sx={{
+                      border: '1px solid',
+                      borderColor: page === pageNum ? 'primary.main' : 'divider',
+                      bgcolor: page === pageNum ? 'primary.main' : 'transparent',
+                      color: page === pageNum ? 'white' : 'text.primary',
+                      borderRadius: 1,
+                      fontSize: '0.875rem',
+                      fontWeight: page === pageNum ? 600 : 400,
+                      minWidth: '2rem',
+                      height: '2rem',
+                      p: 0,
+                      '&:hover': {
+                        bgcolor: page === pageNum ? 'primary.main' : (theme.palette.mode === 'dark' ? '#1F2937' : '#F3F4F6'),
+                      },
+                    }}
+                    disableRipple
+                  >
+                    {pageNum}
+                  </IconButton>
+                )
+              )}
+
+              <IconButton
+                onClick={() => handlePageChange(null, page + 1)}
+                disabled={page === totalPages}
+                sx={{
+                  border: '1px solid',
+                  borderColor: 'divider',
+                  borderRadius: 1,
+                  width: '2rem',
+                  height: '2rem',
+                  p: 0,
+                  color: '#6B7280',
+                  '&:hover': {
+                    bgcolor: theme.palette.mode === 'dark' ? '#1F2937' : '#F3F4F6',
+                  },
+                  '&.Mui-disabled': {
+                    color: '#D1D5DB',
+                  },
+                }}
+              >
+                <ChevronRight sx={{ fontSize: '0.875rem' }} />
+              </IconButton>
             </Box>
-            {totalPages > 1 && (
-              <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
-                <Pagination count={totalPages} page={page} onChange={handlePageChange} />
-              </Box>
-            )}
-          </>
-        )}
-      </AccordionDetails>
-    </Accordion>
+          )}
+        </>
+      )}
+    </StatusSection>
   );
 };
 
