@@ -18,24 +18,6 @@ const shake = keyframes`
   100% { transform: translateX(0); }
 `;
 
-const rotateBorder = keyframes`
-  0% {
-    background-position: 0% 50%;
-  }
-  25% {
-    background-position: 100% 50%;
-  }
-  50% {
-    background-position: 100% 100%;
-  }
-  75% {
-    background-position: 0% 100%;
-  }
-  100% {
-    background-position: 0% 50%;
-  }
-`;
-
 const LoginPage = () => {
   const { login: authLogin, isAuthenticated } = useAuth();
   const [email, setEmail] = useState('');
@@ -71,7 +53,7 @@ const LoginPage = () => {
       // Clear the state to avoid showing message again on refresh
       navigate(location.pathname, { replace: true, state: {} });
     }
-  }, [location.state, navigate]);
+  }, [location.state, location.pathname, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
