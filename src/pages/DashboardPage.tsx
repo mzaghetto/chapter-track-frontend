@@ -15,15 +15,15 @@ const DashboardPage = () => {
   const theme = useTheme();
   const [manhwaName, setManhwaName] = useState('');
   const [displayedManhwaName, setDisplayedManhwaName] = useState('');
-  const [manhwaListKey, setManhwaListKey] = useState(0);
+  const [updatedManhwa, setUpdatedManhwa] = useState<DetailedUserManhwa | null>(null);
 
   const [selectedManhwa, setSelectedManhwa] = useState<DetailedUserManhwa | null>(null);
   const [isModalOpen, setModalOpen] = useState(false);
   const [openConfirmDialog, setOpenConfirmDialog] = useState(false);
   const [manhwaToRemove, setManhwaToRemove] = useState<number | null>(null);
 
-  const handleManhwaChange = () => {
-    setManhwaListKey((prev) => prev + 1);
+  const handleManhwaChange = (updated: DetailedUserManhwa) => {
+    setUpdatedManhwa(updated);
   };
 
   const handleOpenModal = (manhwa: DetailedUserManhwa) => {
@@ -36,9 +36,11 @@ const DashboardPage = () => {
     setModalOpen(false);
   };
 
-  const handleManhwaUpdated = () => {
+  const handleManhwaUpdated = (updatedManhwa?: DetailedUserManhwa) => {
+    if (updatedManhwa) {
+      setUpdatedManhwa(updatedManhwa);
+    }
     handleCloseModal();
-    handleManhwaChange();
   };
 
   const handleOpenConfirmDialog = (manhwaId: number) => {
@@ -55,7 +57,10 @@ const DashboardPage = () => {
     if (token && manhwaToRemove) {
       try {
         await removeManhwaFromUser(token, [manhwaToRemove.toString()]);
-        handleManhwaChange();
+        // Trigger a refresh by changing displayedManhwaName temporarily
+        const current = displayedManhwaName;
+        setDisplayedManhwaName('');
+        setTimeout(() => setDisplayedManhwaName(current), 0);
       } catch (error) {
         console.error('Failed to remove manhwa', error);
       }
@@ -65,6 +70,10 @@ const DashboardPage = () => {
 
   const handleSearch = () => {
     setDisplayedManhwaName(manhwaName);
+  };
+
+  const clearUpdatedManhwa = () => {
+    setUpdatedManhwa(null);
   };
 
   return (
@@ -137,36 +146,40 @@ const DashboardPage = () => {
 
         {/* Manhwa Sections */}
         <UserManhwaSection
-          key={`${manhwaListKey}-reading`}
           userStatus="READING"
           manhwaName={displayedManhwaName}
           onEdit={handleOpenModal}
           onConfirmDelete={handleOpenConfirmDialog}
-          onChapterUpdated={handleManhwaChange}
+          onManhwaUpdated={handleManhwaChange}
+          updatedManhwa={updatedManhwa}
+          onUpdatedProcessed={clearUpdatedManhwa}
         />
         <UserManhwaSection
-          key={`${manhwaListKey}-paused`}
           userStatus="PAUSED"
           manhwaName={displayedManhwaName}
           onEdit={handleOpenModal}
           onConfirmDelete={handleOpenConfirmDialog}
-          onChapterUpdated={handleManhwaChange}
+          onManhwaUpdated={handleManhwaChange}
+          updatedManhwa={updatedManhwa}
+          onUpdatedProcessed={clearUpdatedManhwa}
         />
         <UserManhwaSection
-          key={`${manhwaListKey}-dropped`}
           userStatus="DROPPED"
           manhwaName={displayedManhwaName}
           onEdit={handleOpenModal}
           onConfirmDelete={handleOpenConfirmDialog}
-          onChapterUpdated={handleManhwaChange}
+          onManhwaUpdated={handleManhwaChange}
+          updatedManhwa={updatedManhwa}
+          onUpdatedProcessed={clearUpdatedManhwa}
         />
         <UserManhwaSection
-          key={`${manhwaListKey}-completed`}
           userStatus="COMPLETED"
           manhwaName={displayedManhwaName}
           onEdit={handleOpenModal}
           onConfirmDelete={handleOpenConfirmDialog}
-          onChapterUpdated={handleManhwaChange}
+          onManhwaUpdated={handleManhwaChange}
+          updatedManhwa={updatedManhwa}
+          onUpdatedProcessed={clearUpdatedManhwa}
         />
       </Box>
 

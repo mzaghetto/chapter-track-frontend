@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   Box,
   Card,
@@ -28,30 +28,65 @@ interface ManhwaCardProps {
   manhwa: DetailedUserManhwa;
   onEdit: (manhwa: DetailedUserManhwa) => void;
   onConfirmDelete: (manhwaId: number) => void;
-  onChapterUpdated?: () => void;
+  onManhwaUpdated?: (updated: DetailedUserManhwa) => void;
 }
 
 const ManhwaCard: React.FC<ManhwaCardProps> = ({
   manhwa,
   onEdit,
   onConfirmDelete,
-  onChapterUpdated,
+  onManhwaUpdated,
 }) => {
   const { token } = useAuth();
   const theme = useTheme();
   const [imageError, setImageError] = useState(false);
-  const [localManhwa, setLocalManhwa] = useState(manhwa);
+  const [localManhwa, setLocalManhwa] = useState<DetailedUserManhwa>(manhwa);
+  const prevManhwaIdRef = useRef<string | null>(null);
+
+  // Only update local state when it's a different manhwa (different ID)
+  // This preserves local changes for the current manhwa while allowing updates from modal
+  useEffect(() => {
+    if (prevManhwaIdRef.current !== manhwa.id) {
+      // Different manhwa, replace entirely
+      setLocalManhwa(manhwa);
+      prevManhwaIdRef.current = manhwa.id;
+    } else {
+      // Same manhwa - only update fields that are different and exist in the prop
+      // This preserves fields that might not be in the API response
+      setLocalManhwa((prev) => {
+        const updates: Partial<DetailedUserManhwa> = {};
+
+        if (manhwa.lastEpisodeRead !== undefined && manhwa.lastEpisodeRead !== prev.lastEpisodeRead) {
+          updates.lastEpisodeRead = manhwa.lastEpisodeRead;
+        }
+        if (manhwa.statusReading !== undefined && manhwa.statusReading !== prev.statusReading) {
+          updates.statusReading = manhwa.statusReading;
+        }
+        if (manhwa.providerId !== undefined && manhwa.providerId !== prev.providerId) {
+          updates.providerId = manhwa.providerId;
+        }
+        if (manhwa.providerName !== undefined && manhwa.providerName !== prev.providerName) {
+          updates.providerName = manhwa.providerName;
+        }
+
+        // Only update if there are actual changes
+        return Object.keys(updates).length > 0 ? { ...prev, ...updates } : prev;
+      });
+    }
+  }, [manhwa]);
 
   const handleChapterChange = async (newChapter: number) => {
     if (token && newChapter >= 0) {
       try {
-        await updateUserManhwa(token, manhwa.id, { lastEpisodeRead: newChapter });
-        setLocalManhwa((prev: DetailedUserManhwa) => ({
+        const response = await updateUserManhwa(token, manhwa.id, { lastEpisodeRead: newChapter });
+        const updated = response.data.userManhwa;
+        // Update local state immediately for UI feedback
+        setLocalManhwa((prev) => ({
           ...prev,
           lastEpisodeRead: newChapter,
         }));
-        if (onChapterUpdated) {
-          onChapterUpdated();
+        if (onManhwaUpdated) {
+          onManhwaUpdated(updated);
         }
       } catch (error) {
         console.error('Failed to update chapter', error);
@@ -63,7 +98,7 @@ const ManhwaCard: React.FC<ManhwaCardProps> = ({
     if (token) {
       try {
         await registerManhwaNotification(token, parseInt(manhwa.manhwaId), 'TELEGRAM', enabled);
-        setLocalManhwa((prev: DetailedUserManhwa) => ({
+        setLocalManhwa((prev) => ({
           ...prev,
           isTelegramNotificationEnabled: enabled,
         }));
@@ -139,7 +174,7 @@ const ManhwaCard: React.FC<ManhwaCardProps> = ({
           <Box
             component="img"
             src={localManhwa.coverImage}
-            alt={`${localManhwa.manhwaName} cover`}
+            alt={`${localManhwa.manhwaName || 'Manhwa'} cover`}
             sx={{
               width: '100%',
               height: '100%',
@@ -162,7 +197,7 @@ const ManhwaCard: React.FC<ManhwaCardProps> = ({
             }}
           >
             <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '1.125rem' }}>
-              {localManhwa.manhwaName.charAt(0)}
+              {localManhwa.manhwaName?.charAt(0) || '?'}
             </Typography>
           </Box>
         )}
@@ -223,7 +258,7 @@ const ManhwaCard: React.FC<ManhwaCardProps> = ({
               WebkitBoxOrient: 'vertical',
             }}
           >
-            {localManhwa.manhwaName}
+            {localManhwa.manhwaName || 'Manhwa'}
           </Typography>
         </Box>
       </Box>
@@ -426,7 +461,7 @@ const ManhwaCard: React.FC<ManhwaCardProps> = ({
             <Tooltip title="Edit">
               <IconButton
                 size="small"
-                onClick={() => onEdit(localManhwa)}
+                onClick={() => onEdit(manhwa)}
                 sx={{
                   p: '0.375rem',
                   color: '#9CA3AF',
@@ -446,7 +481,7 @@ const ManhwaCard: React.FC<ManhwaCardProps> = ({
             <Tooltip title="Delete">
               <IconButton
                 size="small"
-                onClick={() => onConfirmDelete(parseInt(localManhwa.manhwaId))}
+                onClick={() => onConfirmDelete(parseInt(manhwa.manhwaId))}
                 sx={{
                   p: '0.375rem',
                   color: '#9CA3AF',

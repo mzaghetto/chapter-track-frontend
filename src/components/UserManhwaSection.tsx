@@ -12,7 +12,9 @@ interface UserManhwaSectionProps {
   onEdit: (manhwa: DetailedUserManhwa) => void;
   onConfirmDelete: (manhwaId: number) => void;
   manhwaName: string;
-  onChapterUpdated?: () => void;
+  onManhwaUpdated?: (updated: DetailedUserManhwa) => void;
+  updatedManhwa?: DetailedUserManhwa | null;
+  onUpdatedProcessed?: () => void;
 }
 
 const statusConfig: Record<
@@ -30,7 +32,9 @@ const UserManhwaSection: React.FC<UserManhwaSectionProps> = ({
   onEdit,
   onConfirmDelete,
   manhwaName,
-  onChapterUpdated,
+  onManhwaUpdated,
+  updatedManhwa,
+  onUpdatedProcessed,
 }) => {
   const { token } = useAuth();
   const theme = useTheme();
@@ -41,6 +45,34 @@ const UserManhwaSection: React.FC<UserManhwaSectionProps> = ({
   const [loading, setLoading] = useState(true);
 
   const pageSize = parseInt(process.env.REACT_APP_MANHWAS_PER_PAGE || '8');
+
+  // Handle local update when a manhwa is updated
+  useEffect(() => {
+    if (updatedManhwa) {
+      setManhwas((prev) => {
+        const index = prev.findIndex((m) => m.id === updatedManhwa.id);
+        if (index !== -1) {
+          // Update the manhwa in the current list
+          const updated = [...prev];
+          updated[index] = updatedManhwa;
+          return updated;
+        }
+        // If the updated manhwa moved to a different status, remove it from current list
+        if (updatedManhwa.statusReading !== userStatus) {
+          return prev.filter((m) => m.id !== updatedManhwa.id);
+        }
+        // If the updated manhwa moved to this status, add it
+        if (updatedManhwa.statusReading === userStatus) {
+          return [...prev, updatedManhwa];
+        }
+        return prev;
+      });
+      // Notify parent that update was processed
+      if (onUpdatedProcessed) {
+        onUpdatedProcessed();
+      }
+    }
+  }, [updatedManhwa, userStatus, onUpdatedProcessed]);
 
   const fetchManhwas = useCallback(async () => {
     if (!token) return;
@@ -106,7 +138,7 @@ const UserManhwaSection: React.FC<UserManhwaSectionProps> = ({
               manhwa={manhwa}
               onEdit={onEdit}
               onConfirmDelete={onConfirmDelete}
-              onChapterUpdated={onChapterUpdated}
+              onManhwaUpdated={onManhwaUpdated}
             />
           ))}
 

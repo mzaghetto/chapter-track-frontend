@@ -26,7 +26,7 @@ interface UpdateManhwaModalProps {
   open: boolean;
   handleClose: () => void;
   manhwa: DetailedUserManhwa | null;
-  onManhwaUpdated: (updatedManhwa?: any) => void;
+  onManhwaUpdated: (updatedManhwa?: DetailedUserManhwa) => void;
 }
 
 const statusConfig: Record<string, { label: string; color: string }> = {
